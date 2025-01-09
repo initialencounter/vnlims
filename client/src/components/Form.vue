@@ -17,11 +17,7 @@
       <el-table-column prop="displayStatus" label="状态" width="90" />
       <el-table-column prop="submitDate" label="提交日期" width="120" />
       <el-table-column prop="tnotes" label="技术部备注" min-width="150" />
-      <el-table-column prop="mnotes" label="市场部备注" min-width="200">
-        <template #default="scope">
-          {{ formatDate(scope.row.submitDate) }}
-        </template>
-      </el-table-column>
+      <el-table-column prop="mnotes" label="市场部备注" min-width="200" />
       <el-table-column label="操作" fixed="right" width="120">
         <template #default="scope">
           <el-button
