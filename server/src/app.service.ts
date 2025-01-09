@@ -23,9 +23,9 @@ export class AppService {
     return this.projectsRepository.find();
   }
 
-  async search(project: Project): Promise<Project[]> {
+  async search(project: Project, rows: number): Promise<Project[]> {
     const whereConditions: any = {};
-    
+
     if (project.systemId) whereConditions.systemId = Like(`%${project.systemId}%`);
     if (project.appraiserName) whereConditions.appraiserName = Like(`%${project.appraiserName}%`);
     if (project.itemCName) whereConditions.itemCName = Like(`%${project.itemCName}%`);
@@ -36,6 +36,7 @@ export class AppService {
 
     let result = await this.projectsRepository.find({
       where: whereConditions,
+      take: rows,
     });
     return result;
   }
@@ -44,19 +45,20 @@ export class AppService {
     return this.projectsRepository.save(project);
   }
 
-  async searchTNotes(tnotes: string): Promise<Project[]> {
+  async searchTNotes(tnotes: string, rows: number): Promise<Project[]> {
     return this.projectsRepository.find({
       where: {
         tnotes: Like(`%${tnotes}%`),
-      },
+      }, take: rows,
     });
   }
 
-  async searchMNotes(mnotes: string): Promise<Project[]> {
+  async searchMNotes(mnotes: string, rows: number): Promise<Project[]> {
     return this.projectsRepository.find({
       where: {
         mnotes: Like(`%${mnotes}%`),
       },
+      take: rows,
     });
   }
 

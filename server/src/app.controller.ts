@@ -31,17 +31,17 @@ export class AppController {
     project.projectNo = projectNo;
     project.mnotes = mnotes;
     project.tnotes = tnotes;
-    return this.appService.search(project);
+    return this.appService.search(project, rows);
   }
 
   @Get('searchTNotes')
   searchTNotes(@Query('tNotes') tNotes: string): Promise<Project[]> {
-    return this.appService.searchTNotes(tNotes);
+    return this.appService.searchTNotes(tNotes, 10);
   }
 
   @Get('searchMNotes')
   searchMNotes(@Query('mNotes') mNotes: string): Promise<Project[]> {
-    return this.appService.searchMNotes(mNotes);
+    return this.appService.searchMNotes(mNotes, 10);
   }
 
   @Post('insert')
