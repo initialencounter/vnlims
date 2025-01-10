@@ -50,7 +50,13 @@ const formatDate = (dateStr: string) => {
 
 // 查看详情
 const handleView = (row: DataModel) => {
-  navigator.clipboard.writeText(row.projectNo)
+  // 使用隐藏的输入框进行复制
+  const input = document.createElement('input')
+  input.value = row.projectNo
+  document.body.appendChild(input)
+  input.select()
+  document.execCommand('copy')
+  document.body.removeChild(input)
   ElMessage.success('复制成功')
 }
 
