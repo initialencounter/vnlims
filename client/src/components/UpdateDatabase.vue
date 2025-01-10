@@ -2,6 +2,7 @@
   <div class="update-container">
     <h2 class="page-title">更新数据库</h2>
 
+    <h3>最后更新时间：{{ lastUpdatedTime }}</h3>
     <el-form
       @submit.prevent="submitRequest"
       label-position="top"
@@ -70,17 +71,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { Key } from "@element-plus/icons-vue";
 import { isDev } from "../utils";
 import axios from "axios";
 
-const sessionId = ref("d87825c3-c7ce-467c-af63-9b6c2bb86dd5");
-const date = ref("2025-01-10");
-const userName = ref("zengwang");
+const sessionId = ref("");
+const currentTime = new Date(new Date().setHours(new Date().getHours() + 8));
+const date = ref(currentTime.toISOString().split('T')[0]);
+const userName = ref("");
 const isLoading = ref(false);
 const message = ref("");
 const messageType = ref("success");
+const lastUpdatedTime = ref("");
+onMounted(() => {
+  if (isDev()) {
+    axios.get("http://localhost:4000/getLastUpdated").then((res) => {
+      lastUpdatedTime.value = res.data;
+    });
+  } else {
+    axios.get("/getLastUpdated").then((res) => {
+      lastUpdatedTime.value = res.data;
+    });
+  }
+});
 
 const submitRequest = async () => {
   isLoading.value = true;
@@ -90,6 +104,17 @@ const submitRequest = async () => {
     let res;
     if (sessionId.value.length < 30) {
       message.value = "Session ID 错误";
+      messageType.value = "error";
+      return;
+    }
+    if (userName.value.length < 3) {
+      message.value = "用户名错误";
+      messageType.value = "error";
+      return;
+    }
+    let dateObj = new Date(date.value);
+    if (dateObj.getTime() > new Date(currentTime).getTime()) {
+      message.value = "日期错误";
       messageType.value = "error";
       return;
     }

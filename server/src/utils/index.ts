@@ -26,17 +26,22 @@ export function getJsonFilePaths(dir: string): string[] {
 }
 
 async function makeRequest(queryString: string, baseUrl: string, SESSION: string, USER_NAME: string): Promise<ProjectDataModel[]> {
-    let config = {
-        "method": "GET",
-        "url": `${baseUrl}/rest/project?${queryString}`,
-        "headers": {
+    try {
+        let config = {
+            "method": "GET",
+            "url": `${baseUrl}/rest/project?${queryString}`,
+            "headers": {
             "accept": "application/json, text/plain, */*",
             "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
             "Cookie": `tab-selected=0; SESSION=${SESSION}; username_1=${USER_NAME}`
-        },
+            },
+        }
+        let res: ProjectJson = (await axios(config)).data
+        return res.rows
+    } catch (error) {
+        console.error('makeRequest error:', error);
+        return [];
     }
-    let res: ProjectJson = (await axios(config)).data
-    return res.rows
 }
 
 function makeQueryString(date: string, systemId: string) {

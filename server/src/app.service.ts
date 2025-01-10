@@ -5,10 +5,13 @@ import { Project, ProjectDataModel } from './project/project.entity';
 import { makeQueryString, makeRequest, sleep } from './utils';
 import { Like } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
+  private lastUpdatedFilePath = path.join('lastUpdated.txt'); // 文件路径
   constructor(
     @InjectRepository(Project)
     private projectsRepository: Repository<Project>,
@@ -42,6 +45,7 @@ export class AppService {
   }
 
   async insert(project: Project): Promise<Project> {
+    this.updateLastUpdated(); // 在插入时更新最后更新时间
     return this.projectsRepository.save(project);
   }
 
@@ -103,6 +107,23 @@ export class AppService {
       await sleep(5000);
     }
     await this.projectsRepository.save(projectsToSave);
+    this.updateLastUpdated(); // 在导入完成后更新最后更新时间
     return `成功导入 ${projectsToSave.length} 条数据`;
+  }
+
+  // 更新最后更新时间并持久化到文件
+  updateLastUpdated(): void {
+    const currentTime = new Date();
+    fs.writeFileSync(this.lastUpdatedFilePath, currentTime.toString()); // 写入文件
+    this.logger.log(`最后更新时间: ${currentTime}`); // 记录日志
+  }
+
+  // 从文件中获取最后更新时间
+  getLastUpdated(): string {
+    if (fs.existsSync(this.lastUpdatedFilePath)) {
+      const lastUpdated = fs.readFileSync(this.lastUpdatedFilePath, 'utf-8');
+      return lastUpdated; // 返回最后更新时间
+    }
+    return 'null'; // 如果文件不存在，返回 null
   }
 }

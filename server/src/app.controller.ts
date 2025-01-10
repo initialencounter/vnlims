@@ -62,4 +62,9 @@ export class AppController {
   ) {
     return this.appService.ImportProject(sessionId, userName, date);
   }
+
+  @Get('getLastUpdated')
+  getLastUpdated() {
+    return this.appService.getLastUpdated();
+  }
 }
