@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { House, Search, Fold, Expand } from '@element-plus/icons-vue'
+import { House, Search, Fold, Expand, Refresh } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const isCollapse = ref(false)
@@ -26,6 +26,11 @@ const menuItems = [
     icon: Search,
     title: '搜索项目名称',
     path: '/searchItemCName'
+  },
+  {
+    icon: Refresh,
+    title: '更新数据库',
+    path: '/updateDatabase'
   }
 ]
 

@@ -18,9 +18,14 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../components/SearchMNotes.vue')
   },
   {
-    path: '/searchCName',
-    name: 'searchCName',
+    path: '/searchItemCName',
+    name: 'searchItemCName',
     component: () => import('../components/SearchItemCName.vue')
+  },
+  {
+    path: '/updateDatabase',
+    name: 'updateDatabase',
+    component: () => import('../components/UpdateDatabase.vue')
   }
 ]
 
