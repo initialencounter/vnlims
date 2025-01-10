@@ -44,6 +44,11 @@ export class AppController {
     return this.appService.searchMNotes(mNotes, 10);
   }
 
+  @Get('searchItemCName')
+  searchItemCName(@Query('itemCName') itemCName: string): Promise<Project[]> {
+    return this.appService.searchItemCName(itemCName, 100);
+  }
+
   @Post('insert')
   insert(project: Project) {
     return this.appService.insert(project);

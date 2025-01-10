@@ -21,6 +21,11 @@ const menuItems = [
     icon: Search,
     title: '搜索市场部备注',
     path: '/searchMNotes'
+  },
+  {
+    icon: Search,
+    title: '搜索项目名称',
+    path: '/searchItemCName'
   }
 ]
 

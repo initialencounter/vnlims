@@ -62,6 +62,15 @@ export class AppService {
     });
   }
 
+  async searchItemCName(itemCName: string, rows: number): Promise<Project[]> {
+    return this.projectsRepository.find({
+      where: {
+        itemCName: Like(`%${itemCName}%`),
+      },
+      take: rows,
+    });
+  }
+
   async ImportProject(sessionId: string, userName: string, date: string): Promise<string> {
     if (!date) {
       date = new Date().toISOString().split('T')[0];
