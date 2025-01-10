@@ -92,27 +92,13 @@ import { projectTracking } from '../utils';
 import axios from 'axios';
 import { isDev } from '../utils';
 import { ElLoading } from 'element-plus';
+import { useSearchStore } from '../stores/search';
 
 const isDevMode = isDev();
-let today = new Date().toISOString().split('T')[0];
-let lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1))
-  .toISOString()
-  .split('T')[0];
-const query = ref<Record<string, string | number>>({
-  systemId: 'pek',
-  category: 'battery',
-  reportType: '0',
-  appraiserName: '',
-  itemName: '',
-  principal: '',
-  startDate: lastMonth,
-  endDate: today,
-  projectNo: 'PEKGZ2025',
-  page: 1,
-  rows: 10,
-});
+const searchStore = useSearchStore();
+const query = ref<Record<string, string | number>>(searchStore.homeQuery);
 
-let dataList = ref<DataModel[]>([]);
+let dataList = ref<DataModel[]>(searchStore.homeResults);
 const submitQuery = async () => {
   const loading = ElLoading.service({
     lock: true,
@@ -131,10 +117,13 @@ const submitQuery = async () => {
       const res = await axios.get(`http://localhost:4000/search?${queryString}`);
       let data: DataModel[] = res.data;
       console.log('res:', res);
+      searchStore.setHomeResults(data);
       dataList.value = data.slice(0, Number(query.value.rows));
     } else {
       const res = await axios.get(`/search?${queryString}`);
-      dataList.value = res.data;
+      let data: DataModel[] = res.data;
+      searchStore.setHomeResults(data);
+      dataList.value = data.slice(0, Number(query.value.rows));
     }
   } catch (error) {
     console.error('查询出错:', error);

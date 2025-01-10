@@ -2,6 +2,8 @@ import 'element-plus/dist/index.css'
 import ElementPlus from 'element-plus'
 import { createApp } from 'vue'
 // @ts-ignore
+import { createPinia } from 'pinia'
+// @ts-ignore
 import App from './App.vue'
 import router from './router'
 import 'element-plus/theme-chalk/dark/css-vars.css'
@@ -11,6 +13,7 @@ const app = createApp(App)
 
 app.use(ElementPlus)
 app.use(router)
+app.use(createPinia())
 
 app.component('House', House)
 app.component('Document', Document)

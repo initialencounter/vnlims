@@ -25,6 +25,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/updateDatabase',
     name: 'updateDatabase',
+    // @ts-ignore
     component: () => import('../components/UpdateDatabase.vue')
   }
 ]

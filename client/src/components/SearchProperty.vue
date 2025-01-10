@@ -23,13 +23,15 @@
 </template>
 
 <script setup lang="ts">
+import { useSearchStore } from '../stores/search'
 import DataForm from "./Form.vue";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import type { DataModel } from "../types";
 import axios from "axios";
 import { isDev } from "../utils";
 import { ElLoading } from "element-plus";
 
+const searchStore = useSearchStore();
 const props = defineProps<{
   type: string
   endpoint: string
@@ -37,8 +39,13 @@ const props = defineProps<{
 }>();
 
 const isDevMode = isDev();
-const queryText = ref('');
-const dataList = ref<DataModel[]>([]);
+const queryText = ref(searchStore.lastQuery[props.type])
+
+watch(queryText, (newVal: string) => {
+  searchStore.setLastQuery(props.type, newVal)
+})
+
+const dataList = ref<DataModel[]>(searchStore.searchResults[props.type]);
 
 const submitQuery = async () => {
   const loading = ElLoading.service({
@@ -56,6 +63,7 @@ const submitQuery = async () => {
       `${baseUrl}/${endpoint}?${props.type}=${queryText.value.trim()}`
     );
     console.log("res:", res);
+    searchStore.setSearchResults(props.type, res.data);
     dataList.value = res.data;
   } catch (error) {
     console.error('查询出错:', error);
