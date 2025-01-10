@@ -36,7 +36,7 @@ let today = new Date().toISOString().split("T")[0];
 let lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1))
   .toISOString()
   .split("T")[0];
-const query = ref<Record<string, string | number>>({
+const query = ref<Record<string, string>>({
   tNotes: "",
 });
 
@@ -52,12 +52,12 @@ const submitQuery = async () => {
     console.log(`查询字符串: ${query.value.tNotes}`);
     if (isDevMode) {
       const res = await axios.get(
-        `http://localhost:4000/searchTNotes?tNotes=${query.value.tNotes}`
+        `http://localhost:4000/searchTNotes?tNotes=${query.value.tNotes.trim()}`
       );
       console.log("res:", res);
       dataList.value = res.data;
     } else {
-      const res = await axios.get(`/searchTNotes?tNotes=${query.value.tNotes}`);
+      const res = await axios.get(`/searchTNotes?tNotes=${query.value.tNotes.trim()}`);
       dataList.value = res.data;
     }
   } catch (error) {

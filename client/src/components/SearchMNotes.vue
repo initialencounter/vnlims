@@ -36,7 +36,7 @@ let today = new Date().toISOString().split("T")[0];
 let lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1))
   .toISOString()
   .split("T")[0];
-const query = ref<Record<string, string | number>>({
+const query = ref<Record<string, string>>({
   mNotes: "",
 });
 
@@ -52,12 +52,12 @@ const submitQuery = async () => {
     console.log(`查询字符串: ${query.value.mNotes}`);
     if (isDevMode) {
       const res = await axios.get(
-        `http://localhost:4000/searchMNotes?mNotes=${query.value.mNotes}`
+        `http://localhost:4000/searchMNotes?mNotes=${query.value.mNotes.trim()}`
       );
       console.log("res:", res);
       dataList.value = res.data;
     } else {
-      const res = await axios.get(`/searchMNotes?mNotes=${query.value.mNotes}`);
+      const res = await axios.get(`/searchMNotes?mNotes=${query.value.mNotes.trim()}`);
       dataList.value = res.data;
     }
   } catch (error) {

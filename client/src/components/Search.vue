@@ -121,9 +121,10 @@ const submitQuery = async () => {
   });
   
   try {
-    const queryString = new URLSearchParams(
-      query.value as Record<string, string>
-    ).toString();
+    const trimmedQuery = Object.fromEntries(
+      Object.entries(query.value).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
+    );
+    const queryString = new URLSearchParams(trimmedQuery as Record<string, string>).toString();
     console.log(`查询字符串: ${queryString}`);
     
     if (isDevMode) {
