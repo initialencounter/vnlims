@@ -4,7 +4,7 @@ import { Project, ProjectDataModel } from './project/project.entity';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) { }
 
   @Get()
   getHello(): string {
@@ -49,8 +49,12 @@ export class AppController {
     return this.appService.insert(project);
   }
 
-  // @Get('import')
-  // import() {
-  //   return this.appService.ImportProject();
-  // }
+  @Get('import')
+  import(
+    @Query('sessionId') sessionId: string,
+    @Query('userName') userName: string,
+    @Query('date') date: string,
+  ) {
+    return this.appService.ImportProject(sessionId, userName, date);
+  }
 }

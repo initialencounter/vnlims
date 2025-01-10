@@ -6,10 +6,9 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  
+
   // 配置静态文件服务
-  let staticPath =  join(__dirname, '../..', 'client/dist')
-  console.log(staticPath)
+  let staticPath = join(__dirname, '../..', 'client/dist')
   app.use(serveStatic(staticPath));
 
   app.enableCors({
