@@ -62,9 +62,10 @@ const submitQuery = async () => {
     const res = await axios.get(
       `${baseUrl}/${endpoint}?${props.type}=${queryText.value.trim()}`
     );
+    let data = res.data.reverse()
     console.log("res:", res);
-    searchStore.setSearchResults(props.type, res.data);
-    dataList.value = res.data;
+    searchStore.setSearchResults(props.type, data);
+    dataList.value = data;
   } catch (error) {
     console.error('查询出错:', error);
   } finally {
