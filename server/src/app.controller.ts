@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import { Project, ProjectDataModel } from './project/project.entity';
+import { Request } from 'express';
 
 @Controller()
 export class AppController {
@@ -35,13 +36,23 @@ export class AppController {
   }
 
   @Get('searchTNotes')
-  searchTNotes(@Query('tNotes') tNotes: string): Promise<Project[]> {
-    return this.appService.searchTNotes(tNotes, 10);
+  searchTNotes(@Query('tNotes') tNotes: string, @Req() req: Request): Promise<Project[]> {
+    let ipAddress = req.ip;
+    if (req.headers['x - forwarded - for']) {
+      ipAddress = req.headers['x - forwarded - for'].toString().split(',')[0].trim();
+    }
+    this.appService.logger.debug(`searchTNotes${ipAddress}：${tNotes}`);
+    return this.appService.searchTNotes(tNotes, 100);
   }
 
   @Get('searchMNotes')
-  searchMNotes(@Query('mNotes') mNotes: string): Promise<Project[]> {
-    return this.appService.searchMNotes(mNotes, 10);
+  searchMNotes(@Query('mNotes') mNotes: string, @Req() req: Request): Promise<Project[]> {
+    let ipAddress = req.ip;
+    if (req.headers['x - forwarded - for']) {
+      ipAddress = req.headers['x - forwarded - for'].toString().split(',')[0].trim();
+    }
+    this.appService.logger.debug(`searchTNotes${ipAddress}：${mNotes}`);
+    return this.appService.searchMNotes(mNotes, 100);
   }
 
   @Get('searchItemCName')

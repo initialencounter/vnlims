@@ -10,7 +10,7 @@ import * as path from 'path';
 
 @Injectable()
 export class AppService {
-  private readonly logger = new Logger(AppService.name);
+  readonly logger = new Logger(AppService.name);
   private lastUpdatedFilePath = path.join('lastUpdated.txt'); // 文件路径
   constructor(
     @InjectRepository(Project)
@@ -89,10 +89,10 @@ export class AppService {
         projectNo: Like(`%${projectNo}%`),
       },
     });
-    if (projects.length > 0) {
-      this.logger.debug(`${date} 已发现 ${projects.length} 条数据，明天再更新吧。`);
-      return `${date} 已发现 ${projects.length} 条数据，明天再更新吧。`;
-    }
+    // if (projects.length > 0) {
+    //   this.logger.debug(`${date} 已发现 ${projects.length} 条数据，明天再更新吧。`);
+    //   return `${date} 已发现 ${projects.length} 条数据，明天再更新吧。`;
+    // }
     const systemIdList = ['aek', 'pek', 'sek', 'rek'];
     const projectsToSave: Project[] = [];
     for (const systemId of systemIdList) {
