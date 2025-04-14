@@ -7,7 +7,7 @@ use hander::{
 };
 use migration::{Migrator, MigratorTrait};
 use std::env;
-use tower_http::{compression::CompressionLayer, trace::TraceLayer};
+use tower_http::{compression::CompressionLayer, cors::{Any, CorsLayer}, trace::TraceLayer};
 
 #[tokio::main]
 async fn start() -> anyhow::Result<()> {
@@ -25,6 +25,12 @@ async fn start() -> anyhow::Result<()> {
 
     let state = AppState { conn };
 
+    // 配置 CORS
+    let cors = CorsLayer::new()
+        .allow_origin(Any) // 允许任何来源
+        .allow_methods(Any) // 允许任何 HTTP 方法
+        .allow_headers(Any); // 允许任何请求头
+
     let app = Router::new()
         .route("/", get(static_handler))
         .route("/", post(create_project))
@@ -37,6 +43,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/getLastUpdated", get(get_table_update_time))
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
+        .layer(cors)
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind(&server_url).await.unwrap();
