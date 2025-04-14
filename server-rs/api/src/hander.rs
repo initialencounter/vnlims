@@ -11,8 +11,10 @@ use axum_example_service::{
 use entity::project::{self, Model};
 use serde::{Deserialize, Serialize};
 use spider::{make_query_string, Spider};
+use tokio::io::AsyncWriteExt;
 use std::env;
 use lazy_static::lazy_static;
+use chrono::{DateTime, Local};
 
 lazy_static! {
     static ref LIMS_BASE_URL: String = env::var("LIMS_BASE_URL").expect("LIMS_BASE_URL is not set in .env file");
@@ -161,4 +163,28 @@ pub async fn import_porjects(
     println!("query_response: {:?}", form_data.clone());
     MutationCore::insert_projects(&state.conn, form_data).await.unwrap();
     "".to_string()
+}
+
+pub async fn record_update_time() {
+
+    // 获取当前时间并转换为 Asia/Shanghai 时区
+    let now = std::time::SystemTime::now();
+    let datetime: DateTime<Local> = now.into();
+    let formatted_date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+
+    // 写入文件
+    let mut file = tokio::fs::File::create("last_update_time.txt").await.unwrap();
+    file.write(formatted_date.as_bytes()).await.unwrap();
+    file.flush().await.unwrap();
+
+    println!("last_update_time: {}", formatted_date);
+}
+
+pub async fn get_table_update_time() -> String {
+    if tokio::fs::try_exists("last_update_time.txt").await.unwrap() {
+        let content = tokio::fs::read_to_string("last_update_time.txt").await.unwrap();
+        content
+    } else {
+        "null".to_string()
+    }
 }
