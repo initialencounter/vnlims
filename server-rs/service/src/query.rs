@@ -56,8 +56,8 @@ impl Query {
         rows: u64,
     ) -> Result<(Vec<project::Model>, u64), DbErr> {
         let paginator = Project::find()
-            .filter(field.like(value))
-            .order_by_asc(project::Column::SubmitDate)
+            .filter(field.contains(value))
+            .order_by(project::Column::SubmitDate, Order::Asc)
             .paginate(db, rows);
         let num_pages = paginator.num_pages().await?;
 
