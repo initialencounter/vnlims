@@ -158,10 +158,11 @@ pub async fn import_porjects(
         password,
     );
     spider.login().await.unwrap();
-    let query_string = make_query_string(&date, "pek");
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    let query_string = make_query_string(&date, "aek");
     let form_data = spider.make_query(&query_string).await.unwrap();
-    println!("query_response: {:?}", form_data.clone());
     MutationCore::insert_projects(&state.conn, form_data).await.unwrap();
+    record_update_time().await;
     "".to_string()
 }
 

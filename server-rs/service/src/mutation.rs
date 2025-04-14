@@ -59,14 +59,30 @@ impl Mutation {
         db: &DbConn,
         form_data: Vec<ProjectModel>,
     ) -> Result<String, DbErr> {
-        Project::insert_many(zero_copy_batch_convert(form_data))
+        if form_data.is_empty() {
+            return Ok("no projects to insert".to_string());
+        }
+        let result = Project::insert_many(zero_copy_batch_convert(form_data))
             .on_conflict(
-                sea_orm::sea_query::OnConflict::column(Column::SelfId) // 对唯一字段email处理冲突
-                    .update_columns([Column::DisplayStatus, Column::ReportNo]) // 只更新name字段
+                sea_orm::sea_query::OnConflict::column(Column::SelfId)
+                    .update_columns([Column::DisplayStatus, Column::ReportNo, Column::ReportType])
                     .to_owned(),
             )
             .exec(db)
-            .await?;
+            .await;
+        match result {
+            Ok(insert_result) => {
+                println!("insert_result: {:?}", insert_result);
+            }
+            Err(e) => {
+                // 针对 RecordNotInserted 错误的处理
+                if let DbErr::RecordNotInserted = e {
+                    return Ok("RecordNotInserted".to_string())
+                }
+                println!("insert error: {:?}", e);
+                return Ok("other insert error".to_string())
+            }
+        };
         Ok("projects inserted".to_string())
     }
 
