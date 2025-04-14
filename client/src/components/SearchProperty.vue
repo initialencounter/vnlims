@@ -60,7 +60,7 @@ const submitQuery = async () => {
     const baseUrl = isDevMode ? 'http://localhost:4000' : '';
     
     const res = await axios.get(
-      `${baseUrl}/${endpoint}?${props.type}=${queryText.value.trim()}`
+      `${baseUrl}/${endpoint}?searchText=${queryText.value.trim()}`
     );
     let data = res.data.reverse()
     console.log("res:", res);
