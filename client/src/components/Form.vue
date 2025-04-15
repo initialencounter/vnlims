@@ -7,6 +7,7 @@
       border
       :max-height="800"
       :row-class-name="setRowClass"
+      @cell-click="handleCellClick"
     >
       <el-table-column
         prop="projectNo"
@@ -44,7 +45,7 @@ defineProps<{
 }>();
 
 // 设置行的类名
-const setRowClass = (row: {row:DataModel}) => {
+const setRowClass = (row: { row: DataModel }) => {
   let systemId = row.row?.projectNo?.slice(0, 3); // 获取系统ID
   switch (systemId) {
     case 'PEK':
@@ -57,6 +58,21 @@ const setRowClass = (row: {row:DataModel}) => {
       return 'row-red';
     default:
       return 'row-withe';
+  }
+};
+
+// 处理单元格点击事件
+const handleCellClick = (row: DataModel, column: any, cell: HTMLElement) => {
+  const text = cell.innerText.trim(); // 获取单元格内容
+  if (text) {
+    // 使用隐藏的输入框进行复制
+    const input = document.createElement('input');
+    input.value = text;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    ElMessage.success(`已复制: ${text}`);
   }
 };
 
@@ -94,11 +110,11 @@ const handleView = (row: DataModel) => {
 }
 
 :deep(.row-purple) {
-  color: #8C1AF6 !important;
+  color: #8c1af6 !important;
 }
 
 :deep(.row-red) {
-  color: #EA3323 !important;
+  color: #ea3323 !important;
 }
 
 /* 优化表格在小屏幕上的显示 */
