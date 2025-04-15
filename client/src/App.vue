@@ -1,18 +1,10 @@
 <script setup lang="ts">
-import { useDark, useToggle } from "@vueuse/core";
-import { Moon, Sunny } from "@element-plus/icons-vue";
-import Sidebar from "./components/Sidebar.vue";
+import { useDark, useToggle } from '@vueuse/core';
+import { Moon, Sunny } from '@element-plus/icons-vue';
+import Sidebar from './components/Sidebar.vue';
 
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
-
-const isDev = import.meta.env.DEV;
-
-// @ts-ignore
-import Search from "./components/Search.vue";
-import SearchTNotes from "./components/SearchTNotes.vue";
-if (!isDev) {
-}
 </script>
 
 <template>
@@ -28,7 +20,7 @@ if (!isDev) {
         </div>
       </div>
     </div>
-      <router-view></router-view>
+    <router-view></router-view>
   </div>
 </template>
 

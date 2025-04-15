@@ -77,10 +77,10 @@ impl Mutation {
             Err(e) => {
                 // 针对 RecordNotInserted 错误的处理
                 if let DbErr::RecordNotInserted = e {
-                    return Ok("RecordNotInserted".to_string())
+                    return Ok("RecordNotInserted".to_string());
                 }
                 println!("insert error: {:?}", e);
-                return Ok("other insert error".to_string())
+                return Ok("other insert error".to_string());
             }
         };
         Ok("projects inserted".to_string())

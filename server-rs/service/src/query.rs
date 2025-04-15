@@ -3,7 +3,6 @@ use sea_orm::*;
 
 use crate::SearchParamsNotNull;
 
-
 pub struct Query;
 
 impl Query {
@@ -32,20 +31,23 @@ impl Query {
         search_params: SearchParamsNotNull,
     ) -> Result<(Vec<project::Model>, u64), DbErr> {
         let paginator = Project::find()
-        .filter(project::Column::SystemId.like(search_params.system_id))
-        .filter(project::Column::AppraiserName.like(search_params.appraiser_name))
-        .filter(project::Column::ItemCName.like(search_params.item_c_name))
-        .filter(project::Column::ItemEName.like(search_params.item_e_name))
-        .filter(project::Column::PrincipalName.like(search_params.principal_name))
-        .filter(project::Column::ProjectNo.like(search_params.project_no))
-        .filter(project::Column::Mnotes.like(search_params.mnotes))
-        .filter(project::Column::Tnotes.like(search_params.tnotes))
-        .order_by_asc(project::Column::SubmitDate)
-        .paginate(db, search_params.rows);
+            .filter(project::Column::SystemId.like(search_params.system_id))
+            .filter(project::Column::AppraiserName.like(search_params.appraiser_name))
+            .filter(project::Column::ItemCName.like(search_params.item_c_name))
+            .filter(project::Column::ItemEName.like(search_params.item_e_name))
+            .filter(project::Column::PrincipalName.like(search_params.principal_name))
+            .filter(project::Column::ProjectNo.like(search_params.project_no))
+            .filter(project::Column::Mnotes.like(search_params.mnotes))
+            .filter(project::Column::Tnotes.like(search_params.tnotes))
+            .order_by_asc(project::Column::SubmitDate)
+            .paginate(db, search_params.rows);
         let num_pages = paginator.num_pages().await?;
 
         // Fetch paginated projects
-        paginator.fetch_page(search_params.page - 1).await.map(|p| (p, num_pages))
+        paginator
+            .fetch_page(search_params.page - 1)
+            .await
+            .map(|p| (p, num_pages))
     }
 
     pub async fn search_by_field(

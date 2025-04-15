@@ -1,13 +1,18 @@
 <template>
   <div class="table-container">
-    <el-table 
-      :data="tableData" 
+    <el-table
+      :data="tableData"
       style="width: 100%"
-      stripe 
+      stripe
       border
       :max-height="800"
     >
-      <el-table-column prop="projectNo" label="项目编号" width="170" fixed="left" />
+      <el-table-column
+        prop="projectNo"
+        label="项目编号"
+        width="170"
+        fixed="left"
+      />
       <el-table-column prop="reportNo" label="报告编号" width="150" />
       <el-table-column prop="itemCName" label="项目名称" min-width="150" />
       <el-table-column prop="assigneeName" label="提交人" width="70" />
@@ -20,11 +25,7 @@
       <el-table-column prop="mnotes" label="市场部备注" min-width="200" />
       <el-table-column label="操作" fixed="right" width="120">
         <template #default="scope">
-          <el-button
-            size="small"
-            type="primary"
-            @click="handleView(scope.row)"
-          >
+          <el-button size="small" type="primary" @click="handleView(scope.row)">
             复制编号
           </el-button>
         </template>
@@ -34,32 +35,31 @@
 </template>
 
 <script setup lang="ts">
-import type { DataModel } from '../types'
-import { ElMessage } from 'element-plus'
+import type { DataModel } from '../types';
+import { ElMessage } from 'element-plus';
 
 defineProps<{
-  tableData: DataModel[]
-}>()
+  tableData: DataModel[];
+}>();
 
 // 格式化日期
 const formatDate = (dateStr: string) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN')
-}
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('zh-CN');
+};
 
 // 查看详情
 const handleView = (row: DataModel) => {
   // 使用隐藏的输入框进行复制
-  const input = document.createElement('input')
-  input.value = row.projectNo
-  document.body.appendChild(input)
-  input.select()
-  document.execCommand('copy')
-  document.body.removeChild(input)
-  ElMessage.success('复制成功')
-}
-
+  const input = document.createElement('input');
+  input.value = row.projectNo;
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand('copy');
+  document.body.removeChild(input);
+  ElMessage.success('复制成功');
+};
 </script>
 
 <style scoped>

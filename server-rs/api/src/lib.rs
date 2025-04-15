@@ -1,15 +1,18 @@
-mod hander;
+mod handler;
 
 use axum::routing::{get, post, Router};
 use axum_example_service::sea_orm::Database;
-use hander::{
-    create_project, delete_project, get_table_update_time, 
-    import_porjects, search_item_c_name, search_m_notes,
-     search_projects, search_t_notes, static_handler, static_handler_404, AppState
+use handler::{
+    create_project, delete_project, get_table_update_time, import_porjects, search_item_c_name,
+    search_m_notes, search_projects, search_t_notes, static_handler, static_handler_404, AppState,
 };
 use migration::{Migrator, MigratorTrait};
 use std::env;
-use tower_http::{compression::CompressionLayer, cors::{Any, CorsLayer}, trace::TraceLayer};
+use tower_http::{
+    compression::CompressionLayer,
+    cors::{Any, CorsLayer},
+    trace::TraceLayer,
+};
 
 #[tokio::main]
 async fn start() -> anyhow::Result<()> {

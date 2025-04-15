@@ -5,10 +5,10 @@
         <div class="search-wrapper">
           <label :for="type">{{ label }}:</label>
           <div class="input-group">
-            <input 
-              type="text" 
-              v-model="queryText" 
-              :id="type" 
+            <input
+              type="text"
+              v-model="queryText"
+              :id="type"
               placeholder="请输入搜索内容"
             />
             <button type="submit">查询</button>
@@ -23,27 +23,27 @@
 </template>
 
 <script setup lang="ts">
-import { useSearchStore } from '../stores/search'
-import DataForm from "./Form.vue";
-import { ref, watch } from "vue";
-import type { DataModel } from "../types";
-import axios from "axios";
-import { isDev } from "../utils";
-import { ElLoading } from "element-plus";
+import { useSearchStore } from '../stores/search';
+import DataForm from './Form.vue';
+import { ref, watch } from 'vue';
+import type { DataModel } from '../types';
+import axios from 'axios';
+import { isDev } from '../utils';
+import { ElLoading } from 'element-plus';
 
 const searchStore = useSearchStore();
 const props = defineProps<{
-  type: string
-  endpoint: string
-  label: string
+  type: string;
+  endpoint: string;
+  label: string;
 }>();
 
 const isDevMode = isDev();
-const queryText = ref(searchStore.lastQuery[props.type])
+const queryText = ref(searchStore.lastQuery[props.type]);
 
 watch(queryText, (newVal: string) => {
-  searchStore.setLastQuery(props.type, newVal)
-})
+  searchStore.setLastQuery(props.type, newVal);
+});
 
 const dataList = ref<DataModel[]>(searchStore.searchResults[props.type]);
 
@@ -51,19 +51,19 @@ const submitQuery = async () => {
   const loading = ElLoading.service({
     lock: true,
     text: '加载中...',
-    background: 'rgba(0, 0, 0, 0.7)'
+    background: 'rgba(0, 0, 0, 0.7)',
   });
 
   try {
     console.log(`查询字符串: ${queryText.value}`);
     const endpoint = props.endpoint;
     const baseUrl = isDevMode ? 'http://localhost:4000' : '';
-    
+
     const res = await axios.get(
       `${baseUrl}/${endpoint}?searchText=${queryText.value.trim()}`
     );
-    let data = res.data.reverse()
-    console.log("res:", res);
+    let data = res.data.reverse();
+    console.log('res:', res);
     searchStore.setSearchResults(props.type, data);
     dataList.value = data;
   } catch (error) {
@@ -136,4 +136,4 @@ button:hover {
 button:active {
   background-color: #3a8ee6;
 }
-</style> 
+</style>

@@ -11,11 +11,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Project::Project) // 请替换为实际的表名
                     .if_not_exists()
-                    .col(
-                        integer(Project::Id)
-                            .auto_increment()
-                            .primary_key(),
-                    )
+                    .col(integer(Project::Id).auto_increment().primary_key())
                     .col(string(Project::AppraiserName).not_null())
                     .col(string(Project::AssigneeName).not_null())
                     .col(string(Project::AuditorName).null())

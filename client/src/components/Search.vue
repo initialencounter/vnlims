@@ -103,18 +103,25 @@ const submitQuery = async () => {
   const loading = ElLoading.service({
     lock: true,
     text: '加载中...',
-    background: 'rgba(0, 0, 0, 0.7)'
+    background: 'rgba(0, 0, 0, 0.7)',
   });
-  
+
   try {
     const trimmedQuery = Object.fromEntries(
-      Object.entries(query.value).map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
+      Object.entries(query.value).map(([key, value]) => [
+        key,
+        typeof value === 'string' ? value.trim() : value,
+      ])
     );
-    const queryString = new URLSearchParams(trimmedQuery as Record<string, string>).toString();
+    const queryString = new URLSearchParams(
+      trimmedQuery as Record<string, string>
+    ).toString();
     console.log(`查询字符串: ${queryString}`);
-    
+
     if (isDevMode) {
-      const res = await axios.get(`http://localhost:4000/search?${queryString}`);
+      const res = await axios.get(
+        `http://localhost:4000/search?${queryString}`
+      );
       let data: DataModel[] = res.data;
       console.log('res:', res);
       searchStore.setHomeResults(data);

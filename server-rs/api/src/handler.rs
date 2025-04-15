@@ -8,16 +8,17 @@ use axum_example_service::{
     sea_orm::DatabaseConnection, Mutation as MutationCore, Query as QueryCore, SearchParams,
     SearchParamsNotNull, SearchSingleFieldParams, UpdateProjectsParams,
 };
+use chrono::{DateTime, Local};
 use entity::project::{self, Model};
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use spider::{make_query_string, Spider};
-use tokio::io::AsyncWriteExt;
 use std::env;
-use lazy_static::lazy_static;
-use chrono::{DateTime, Local};
+use tokio::io::AsyncWriteExt;
 
 lazy_static! {
-    static ref LIMS_BASE_URL: String = env::var("LIMS_BASE_URL").expect("LIMS_BASE_URL is not set in .env file");
+    static ref LIMS_BASE_URL: String =
+        env::var("LIMS_BASE_URL").expect("LIMS_BASE_URL is not set in .env file");
 }
 
 #[derive(Clone)]
@@ -151,7 +152,6 @@ pub async fn search_item_c_name(
     search_by_field(state, params, project::Column::ItemCName).await
 }
 
-
 pub async fn import_porjects(
     state: State<AppState>,
     Query(params): Query<UpdateProjectsParams>,
@@ -159,29 +159,28 @@ pub async fn import_porjects(
     let username = params.username.unwrap_or("".to_string());
     let password = params.password.unwrap_or("".to_string());
     let date = params.date.unwrap_or("".to_string());
-    let spider = Spider::new(
-        LIMS_BASE_URL.to_string(),
-        username,
-        password,
-    );
+    let spider = Spider::new(LIMS_BASE_URL.to_string(), username, password);
     spider.login().await.unwrap();
     std::thread::sleep(std::time::Duration::from_secs(1));
     let query_string = make_query_string(&date, "aek");
     let form_data = spider.make_query(&query_string).await.unwrap();
-    MutationCore::insert_projects(&state.conn, form_data).await.unwrap();
+    MutationCore::insert_projects(&state.conn, form_data)
+        .await
+        .unwrap();
     record_update_time().await;
     "".to_string()
 }
 
 pub async fn record_update_time() {
-
     // 获取当前时间并转换为 Asia/Shanghai 时区
     let now = std::time::SystemTime::now();
     let datetime: DateTime<Local> = now.into();
     let formatted_date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
 
     // 写入文件
-    let mut file = tokio::fs::File::create("last_update_time.txt").await.unwrap();
+    let mut file = tokio::fs::File::create("last_update_time.txt")
+        .await
+        .unwrap();
     file.write(formatted_date.as_bytes()).await.unwrap();
     file.flush().await.unwrap();
 
@@ -190,7 +189,9 @@ pub async fn record_update_time() {
 
 pub async fn get_table_update_time() -> String {
     if tokio::fs::try_exists("last_update_time.txt").await.unwrap() {
-        let content = tokio::fs::read_to_string("last_update_time.txt").await.unwrap();
+        let content = tokio::fs::read_to_string("last_update_time.txt")
+            .await
+            .unwrap();
         content
     } else {
         "null".to_string()
