@@ -197,3 +197,10 @@ pub async fn get_table_update_time() -> String {
         "null".to_string()
     }
 }
+
+pub async fn favicon_handler() -> Html<&'static [u8]> {
+    Html(include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/static/favicon.ico"
+    )))
+}

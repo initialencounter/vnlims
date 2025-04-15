@@ -4,7 +4,7 @@ use axum::routing::{get, post, Router};
 use axum_example_service::sea_orm::Database;
 use handler::{
     create_project, delete_project, get_table_update_time, import_porjects, search_item_c_name,
-    search_m_notes, search_projects, search_t_notes, static_handler, static_handler_404, AppState,
+    search_m_notes, search_projects, search_t_notes, static_handler, static_handler_404, favicon_handler, AppState,
 };
 use migration::{Migrator, MigratorTrait};
 use std::env;
@@ -39,6 +39,7 @@ async fn start() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(static_handler))
         .route("/", post(create_project))
+        .route("/favicon.ico", get(favicon_handler))
         .route("/search", get(search_projects))
         .route("/searchTNotes", get(search_t_notes))
         .route("/searchMNotes", get(search_m_notes))
