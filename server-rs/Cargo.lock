@@ -382,8 +382,10 @@ dependencies = [
  "chrono",
  "dotenvy",
  "entity",
+ "hyper",
  "lazy_static",
  "migration",
+ "percent-encoding",
  "serde",
  "serde_json",
  "spider",
@@ -392,6 +394,7 @@ dependencies = [
  "tower",
  "tower-cookies",
  "tower-http",
+ "tracing",
  "tracing-subscriber",
 ]
 
