@@ -15,4 +15,5 @@ export default defineConfig({
   build: {
     outDir: '../server-rs/api/static',
   },
+  publicDir: './src/public',
 })

@@ -3,7 +3,9 @@ mod hander;
 use axum::routing::{get, post, Router};
 use axum_example_service::sea_orm::Database;
 use hander::{
-    create_project, delete_project, get_table_update_time, import_porjects, search_item_c_name, search_m_notes, search_projects, search_t_notes, static_handler, AppState
+    create_project, delete_project, get_table_update_time, 
+    import_porjects, search_item_c_name, search_m_notes,
+     search_projects, search_t_notes, static_handler, static_handler_404, AppState
 };
 use migration::{Migrator, MigratorTrait};
 use std::env;
@@ -41,6 +43,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/import", get(import_porjects))
         .route("/delete/{id}", post(delete_project))
         .route("/getLastUpdated", get(get_table_update_time))
+        .fallback(static_handler_404)
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
         .layer(cors)

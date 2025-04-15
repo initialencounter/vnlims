@@ -73,6 +73,13 @@ pub async fn static_handler() -> Html<&'static [u8]> {
     )))
 }
 
+pub async fn static_handler_404() -> Html<&'static [u8]> {
+    Html(include_bytes!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/static/404.html"
+    )))
+}
+
 pub async fn search_projects(
     state: State<AppState>,
     Query(params): Query<SearchParams>,
