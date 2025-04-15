@@ -7,24 +7,28 @@
       @submit.prevent="submitRequest"
       label-position="top"
       class="update-form"
+      autocomplete="on"
     >
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="用户名">
             <el-input
-              v-model="userName"
+              v-model="username"
               placeholder="请输入用户名"
+              autocomplete="username"
               :disabled="isLoading"
             />
           </el-form-item>
         </el-col>
 
         <el-col :span="8">
-          <el-form-item label="Session ID">
+          <el-form-item label="密码">
             <el-input
-              v-model="sessionId"
-              placeholder="请输入 Session ID"
+              v-model="password"
+              placeholder="请输入密码"
               :disabled="isLoading"
+              autocomplete="current-password"
+              show-password
             >
               <template #prefix>
                 <el-icon><Key /></el-icon>
@@ -76,10 +80,10 @@ import { Key } from "@element-plus/icons-vue";
 import { isDev } from "../utils";
 import axios from "axios";
 
-const sessionId = ref("");
+const password = ref("");
 const currentTime = new Date(new Date().setHours(new Date().getHours() + 8));
 const date = ref(currentTime.toISOString().split('T')[0]);
-const userName = ref("");
+const username = ref("");
 const isLoading = ref(false);
 const message = ref("");
 const messageType = ref("success");
@@ -102,12 +106,7 @@ const submitRequest = async () => {
 
   try {
     let res;
-    if (sessionId.value.length < 30) {
-      message.value = "Session ID 错误";
-      messageType.value = "error";
-      return;
-    }
-    if (userName.value.length < 3) {
+    if (username.value.length < 3) {
       message.value = "用户名错误";
       messageType.value = "error";
       return;
@@ -121,17 +120,17 @@ const submitRequest = async () => {
     if (isDev()) {
       res = await axios.get("http://localhost:4000/import", {
         params: {
-          sessionId: sessionId.value,
+          password: password.value,
           date: date.value,
-          userName: userName.value,
+          username: username.value,
         },
       });
     } else {
       res = await axios.get("/import", {
         params: {
-          sessionId: sessionId.value,
+          password: password.value,
           date: date.value,
-          userName: userName.value,
+          username: username.value,
         },
       });
     }
