@@ -6,6 +6,7 @@
       stripe
       border
       :max-height="800"
+      :row-class-name="setRowClass"
     >
       <el-table-column
         prop="projectNo"
@@ -42,11 +43,21 @@ defineProps<{
   tableData: DataModel[];
 }>();
 
-// 格式化日期
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('zh-CN');
+// 设置行的类名
+const setRowClass = (row: {row:DataModel}) => {
+  let systemId = row.row?.projectNo?.slice(0, 3); // 获取系统ID
+  switch (systemId) {
+    case 'PEK':
+      return 'row-green';
+    case 'SEK':
+      return 'row-blue';
+    case 'AEK':
+      return 'row-purple';
+    case 'REK':
+      return 'row-red';
+    default:
+      return 'row-withe';
+  }
 };
 
 // 查看详情
@@ -72,6 +83,22 @@ const handleView = (row: DataModel) => {
   --el-table-border-color: var(--el-border-color-lighter);
   --el-table-header-bg-color: var(--el-fill-color-light);
   margin: 0 auto;
+}
+
+:deep(.row-green) {
+  color: #51a020 !important;
+}
+
+:deep(.row-blue) {
+  color: #3e8ed0 !important;
+}
+
+:deep(.row-purple) {
+  color: #8C1AF6 !important;
+}
+
+:deep(.row-red) {
+  color: #EA3323 !important;
 }
 
 /* 优化表格在小屏幕上的显示 */
