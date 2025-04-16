@@ -3,3 +3,4 @@
 /api/static
 data.json
 /last_update_time.txt
+*.sqlite
