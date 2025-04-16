@@ -121,7 +121,7 @@ pub async fn search_by_field(
     field: project::Column,
 ) -> Result<Json<Vec<Model>>, (StatusCode, &'static str)> {
     let page = params.page.unwrap_or(1);
-    let rows = params.rows.unwrap_or(100);
+    let rows = params.rows.unwrap_or(1000);
     let search_text = params.search_text.unwrap_or("".to_string());
 
     let (projects, _) = QueryCore::search_by_field(&state.conn, field, search_text, page, rows)
