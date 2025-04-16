@@ -161,14 +161,20 @@ pub async fn import_porjects(
     let date = params.date.unwrap_or("".to_string());
     let spider = Spider::new(LIMS_BASE_URL.to_string(), username, password);
     spider.login().await.unwrap();
-    std::thread::sleep(std::time::Duration::from_secs(1));
-    let query_string = make_query_string(&date, "aek");
-    let form_data = spider.make_query(&query_string).await.unwrap();
-    MutationCore::insert_projects(&state.conn, form_data)
-        .await
-        .unwrap();
+    let system_ids = ["pek", "sek", "aek", "rek"];
+    let mut count = 0;
+    for system_id in system_ids {
+        let query_string = make_query_string(&date, system_id);
+        let form_data = spider.make_query(&query_string).await.unwrap();
+        count += form_data.len();
+        tracing::info!("{} 新增 {} 数据: - {} 条", date, system_id, form_data.len());
+        MutationCore::insert_projects(&state.conn, form_data)
+            .await
+            .unwrap();
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
     record_update_time().await;
-    "".to_string()
+    format!("{} 新增 {} 条数据", date, count)
 }
 
 pub async fn record_update_time() {

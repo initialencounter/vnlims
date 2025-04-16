@@ -67,10 +67,8 @@ impl Spider {
             .await?;
 
         if response.status().is_success() {
-            println!("查询成功");
             match response.json::<QueryResponse>().await {
                 Ok(query_response) => {
-                    println!("查询结果: {:?}", query_response);
                     return Ok(query_response.rows);
                 }
                 Err(e) => {
