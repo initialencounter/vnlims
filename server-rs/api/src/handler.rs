@@ -86,7 +86,7 @@ pub async fn search_projects(
     Query(params): Query<SearchParams>,
 ) -> Result<Json<Vec<Model>>, (StatusCode, &'static str)> {
     let page = params.page.unwrap_or(1);
-    let rows = params.rows.unwrap_or(100);
+    let rows = params.rows.unwrap_or(1000);
     let system_id = params.system_id.unwrap_or("".to_string());
     let appraiser_name = params.appraiser_name.unwrap_or("".to_string());
     let item_c_name = params.item_c_name.unwrap_or("".to_string());
