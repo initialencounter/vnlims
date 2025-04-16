@@ -25,13 +25,6 @@
       <el-table-column prop="submitDate" label="提交日期" width="120" />
       <el-table-column prop="tnotes" label="技术部备注" min-width="150" />
       <el-table-column prop="mnotes" label="市场部备注" min-width="200" />
-      <el-table-column label="操作" fixed="right" width="120">
-        <template #default="scope">
-          <el-button size="small" type="primary" @click="handleView(scope.row)">
-            复制编号
-          </el-button>
-        </template>
-      </el-table-column>
     </el-table>
   </div>
 </template>
@@ -76,17 +69,6 @@ const handleCellClick = (row: DataModel, column: any, cell: HTMLElement) => {
   }
 };
 
-// 查看详情
-const handleView = (row: DataModel) => {
-  // 使用隐藏的输入框进行复制
-  const input = document.createElement('input');
-  input.value = row.projectNo;
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand('copy');
-  document.body.removeChild(input);
-  ElMessage.success('复制成功');
-};
 </script>
 
 <style scoped>
