@@ -62,8 +62,7 @@ const submitQuery = async () => {
     const res = await axios.get(
       `${baseUrl}/${endpoint}?searchText=${queryText.value.trim()}`
     );
-    let data = res.data.reverse();
-    console.log('res:', res);
+    let data: DataModel[] = res.data;
     searchStore.setSearchResults(props.type, data);
     dataList.value = data;
   } catch (error) {

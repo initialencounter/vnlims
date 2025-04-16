@@ -123,7 +123,6 @@ const submitQuery = async () => {
         `http://localhost:4000/search?${queryString}`
       );
       let data: DataModel[] = res.data;
-      console.log('res:', res);
       searchStore.setHomeResults(data);
       dataList.value = data.slice(0, Number(query.value.rows));
     } else {

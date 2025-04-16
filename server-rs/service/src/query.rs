@@ -39,7 +39,7 @@ impl Query {
             .filter(project::Column::ProjectNo.like(search_params.project_no))
             .filter(project::Column::Mnotes.like(search_params.mnotes))
             .filter(project::Column::Tnotes.like(search_params.tnotes))
-            .order_by_asc(project::Column::SubmitDate)
+            .order_by(project::Column::SubmitDate, Order::Desc)
             .paginate(db, search_params.rows);
         let num_pages = paginator.num_pages().await?;
 
@@ -59,7 +59,7 @@ impl Query {
     ) -> Result<(Vec<project::Model>, u64), DbErr> {
         let paginator = Project::find()
             .filter(field.contains(value))
-            .order_by(project::Column::SubmitDate, Order::Asc)
+            .order_by(project::Column::SubmitDate, Order::Desc)
             .paginate(db, rows);
         let num_pages = paginator.num_pages().await?;
 
