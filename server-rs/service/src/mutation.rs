@@ -65,7 +65,25 @@ impl Mutation {
         let result = Project::insert_many(zero_copy_batch_convert(form_data))
             .on_conflict(
                 sea_orm::sea_query::OnConflict::column(Column::SelfId)
-                    .update_columns([Column::DisplayStatus, Column::ReportNo, Column::ReportType])
+                    .update_columns([
+                        Column::DisplayStatus,
+                        Column::ReportNo,
+                        Column::ReportType,
+                        Column::AppraiserName,
+                        Column::AssigneeName,
+                        Column::AuditorName,
+                        Column::Conclusions,
+                        Column::NextYear,
+                        Column::PrincipalName,
+                        Column::ProjectId,
+                        Column::ProjectNo,
+                        Column::Repeat,
+                        Column::SurveyorNames,
+                        Column::ItemCName,
+                        Column::ItemEName,
+                        Column::Mnotes,
+                        Column::Tnotes,
+                        ])
                     .to_owned(),
             )
             .exec(db)
