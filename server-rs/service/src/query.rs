@@ -31,14 +31,14 @@ impl Query {
         search_params: SearchParamsNotNull,
     ) -> Result<(Vec<project::Model>, u64), DbErr> {
         let paginator = Project::find()
-            .filter(project::Column::SystemId.like(search_params.system_id))
-            .filter(project::Column::AppraiserName.like(search_params.appraiser_name))
-            .filter(project::Column::ItemCName.like(search_params.item_c_name))
-            .filter(project::Column::ItemEName.like(search_params.item_e_name))
-            .filter(project::Column::PrincipalName.like(search_params.principal_name))
-            .filter(project::Column::ProjectNo.like(search_params.project_no))
-            .filter(project::Column::Mnotes.like(search_params.mnotes))
-            .filter(project::Column::Tnotes.like(search_params.tnotes))
+            .filter(project::Column::SystemId.like(format!("%{}%", search_params.system_id)))
+            .filter(project::Column::AppraiserName.like(format!("%{}%", search_params.appraiser_name)))
+            .filter(project::Column::ItemCName.like(format!("%{}%", search_params.item_c_name)))
+            .filter(project::Column::ItemEName.like(format!("%{}%", search_params.item_e_name)))
+            .filter(project::Column::PrincipalName.like(format!("%{}%", search_params.principal_name)))
+            .filter(project::Column::ProjectNo.like(format!("%{}%", search_params.project_no)))
+            .filter(project::Column::Mnotes.like(format!("%{}%", search_params.mnotes)))
+            .filter(project::Column::Tnotes.like(format!("%{}%", search_params.tnotes)))            
             .order_by(project::Column::SubmitDate, Order::Desc)
             .paginate(db, search_params.rows);
         let num_pages = paginator.num_pages().await?;
