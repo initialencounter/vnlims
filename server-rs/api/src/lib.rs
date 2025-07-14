@@ -28,6 +28,7 @@ async fn start() -> anyhow::Result<()> {
     // 使用更灵活的日志初始化方式
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_timer(tracing_subscriber::fmt::time::LocalTime::rfc_3339())
         .init();
 
     dotenvy::dotenv().ok();
