@@ -9,7 +9,7 @@ let lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1))
 export const useSearchStore = defineStore('search', {
   state: () => ({
     homeQuery: {
-      systemId: 'pek',
+      systemId: 'all',
       category: 'battery',
       reportType: '0',
       appraiserName: '',

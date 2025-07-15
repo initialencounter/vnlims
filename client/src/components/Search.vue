@@ -9,6 +9,7 @@
             id="systemId"
             placeholder="请选择运输方式"
           >
+            <el-option label="全部" value="all"></el-option>
             <el-option label="空运" value="pek"></el-option>
             <el-option label="海运" value="sek"></el-option>
             <el-option label="陆运" value="aek"></el-option>
@@ -113,6 +114,9 @@ const submitQuery = async () => {
         typeof value === 'string' ? value.trim() : value,
       ])
     );
+    if (trimmedQuery["systemId"] === 'all') {
+      trimmedQuery["systemId"] = "";
+    }
     const queryString = new URLSearchParams(
       trimmedQuery as Record<string, string>
     ).toString();
