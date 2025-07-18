@@ -26,12 +26,14 @@ export const useSearchStore = defineStore('search', {
       home: [] as DataModel[],
       itemCName: [] as DataModel[],
       tNotes: [] as DataModel[],
-      mNotes: [] as DataModel[]
+      mNotes: [] as DataModel[],
+      principal: [] as DataModel[]
     } as Record<string, DataModel[]>,
     lastQuery: {
       itemCName: '',
       tNotes: '',
-      mNotes: ''
+      mNotes: '',
+      principal: ''
     } as Record<string, string>
   }),
   actions: {
@@ -51,4 +53,4 @@ export const useSearchStore = defineStore('search', {
       this.searchResults = {} as Record<string, DataModel[]>
     }
   }
-}) 
+})

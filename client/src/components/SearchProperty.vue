@@ -3,7 +3,6 @@
     <header>
       <form @submit.prevent="submitQuery" class="search-form">
         <div class="search-wrapper">
-          <label :for="type">{{ label }}:</label>
           <div class="input-group">
             <input
               type="text"
@@ -79,7 +78,9 @@ const submitQuery = async () => {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  height: 100vh;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .header {

@@ -1,7 +1,5 @@
 <template>
   <div class="update-container">
-    <h2 class="page-title">更新数据库</h2>
-
     <h3>最后更新时间：{{ lastUpdatedTime }}</h3>
     <el-form
       @submit.prevent="submitRequest"
@@ -148,6 +146,8 @@ const submitRequest = async () => {
 <style scoped>
 .update-container {
   padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .page-title {

@@ -3,12 +3,13 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/',
+    path: '/search',
     name: 'home',
     component: () => import('../components/Search.vue')
   },
   {
-    path: '/searchTNotes',
+    path: '/',
+    alias: ['/searchTNotes'],
     name: 'searchTNotes',
     component: () => import('../components/SearchTNotes.vue')
   },
@@ -27,6 +28,11 @@ const routes: RouteRecordRaw[] = [
     name: 'updateDatabase',
     // @ts-ignore
     component: () => import('../components/UpdateDatabase.vue')
+  },
+  {
+    path: '/searchPrincipal',
+    name: 'searchPrincipal',
+    component: () => import('../components/SearchPrincipal.vue')
   }
 ]
 
@@ -35,4 +41,4 @@ const router = createRouter({
   routes
 })
 
-export default router 
+export default router
