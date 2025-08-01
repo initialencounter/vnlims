@@ -145,6 +145,13 @@ pub async fn search_m_notes(
     search_by_field(state, params, project::Column::Mnotes).await
 }
 
+pub async fn search_principal(
+    state: State<AppState>,
+    Query(params): Query<SearchSingleFieldParams>,
+) -> Result<Json<Vec<Model>>, (StatusCode, &'static str)> {
+    search_by_field(state, params, project::Column::PrincipalName).await
+}
+
 pub async fn search_item_c_name(
     state: State<AppState>,
     Query(params): Query<SearchSingleFieldParams>,
