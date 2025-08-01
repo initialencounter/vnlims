@@ -1,39 +1,50 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { House, Search, Fold, Expand, Refresh } from '@element-plus/icons-vue';
+import { useRouter, useRoute } from 'vue-router';
+import { House, Search, Fold, Expand, Refresh, Document } from '@element-plus/icons-vue';
 
 const router = useRouter();
+const route = useRoute();
 const isCollapse = ref(false);
 
 const menuItems = [
   {
     icon: House,
     title: '首页',
+    path: '/search',
+    description: '数据查询与概览'
+  },
+  {
+    icon: Document,
+    title: '技术部备注',
     path: '/',
+    description: '搜索技术部备注信息'
   },
   {
-    icon: Search,
-    title: '搜索技术部备注',
-    path: '/searchTNotes',
-  },
-  {
-    icon: Search,
-    title: '搜索市场部备注',
+    icon: Document,
+    title: '市场部备注',
     path: '/searchMNotes',
+    description: '搜索市场部备注信息'
   },
   {
     icon: Search,
-    title: '搜索项目名称',
+    title: '项目名称',
     path: '/searchItemCName',
+    description: '按项目名称搜索'
+  },
+  {
+    icon: Search,
+    title: '委托方搜索', 
+    path: '/searchPrincipal',
+    description: '按委托方搜索'
   },
   {
     icon: Refresh,
     title: '更新数据库',
     path: '/updateDatabase',
+    description: '同步最新数据'
   },
 ];
-
 const handleSelect = (path: string) => {
   router.push(path);
 };
