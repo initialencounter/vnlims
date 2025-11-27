@@ -33,7 +33,12 @@ const routes: RouteRecordRaw[] = [
     path: '/searchPrincipal',
     name: 'searchPrincipal',
     component: () => import('../components/SearchPrincipal.vue')
-  }
+  },
+  {
+    path: '/stack',
+    name: 'stack',
+    component: () => import('../views/Stack.vue')
+  },
 ]
 
 const router = createRouter({
