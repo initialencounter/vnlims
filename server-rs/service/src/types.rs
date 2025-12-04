@@ -13,6 +13,9 @@ pub struct SearchParams {
     pub project_no: Option<String>,
     pub mnotes: Option<String>,
     pub tnotes: Option<String>,
+    pub assignee_name: Option<String>,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -28,6 +31,7 @@ pub struct SearchParamsNotNull {
     pub project_no: String,
     pub mnotes: String,
     pub tnotes: String,
+    pub assignee_name: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

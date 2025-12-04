@@ -29,16 +29,32 @@ impl Query {
     pub async fn search(
         db: &DbConn,
         search_params: SearchParamsNotNull,
+        start_date: &str,
+        end_date: &str,
     ) -> Result<(Vec<project::Model>, u64), DbErr> {
+        let start = format!("{} 00:00", start_date); // "2025-11-01 00:00"
+        let end = format!("{} 23:59", end_date); // "2025-12-04 23:59"
         let paginator = Project::find()
             .filter(project::Column::SystemId.like(format!("%{}%", search_params.system_id)))
-            .filter(project::Column::AppraiserName.like(format!("%{}%", search_params.appraiser_name)))
+            .filter(
+                project::Column::AppraiserName.like(format!("%{}%", search_params.appraiser_name)),
+            )
             .filter(project::Column::ItemCName.like(format!("%{}%", search_params.item_c_name)))
             .filter(project::Column::ItemEName.like(format!("%{}%", search_params.item_e_name)))
-            .filter(project::Column::PrincipalName.like(format!("%{}%", search_params.principal_name)))
+            .filter(
+                project::Column::PrincipalName.like(format!("%{}%", search_params.principal_name)),
+            )
             .filter(project::Column::ProjectNo.like(format!("%{}%", search_params.project_no)))
             .filter(project::Column::Mnotes.like(format!("%{}%", search_params.mnotes)))
-            .filter(project::Column::Tnotes.like(format!("%{}%", search_params.tnotes)))            
+            .filter(project::Column::Tnotes.like(format!("%{}%", search_params.tnotes)))
+            .filter(
+                project::Column::AssigneeName.like(format!("%{}%", search_params.assignee_name)),
+            )
+            .filter(
+                Condition::all()
+                    .add(project::Column::SubmitDate.gte(start))
+                    .add(project::Column::SubmitDate.lte(end)),
+            )
             .order_by(project::Column::SubmitDate, Order::Desc)
             .paginate(db, search_params.rows);
         let num_pages = paginator.num_pages().await?;

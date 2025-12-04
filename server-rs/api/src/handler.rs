@@ -95,6 +95,9 @@ pub async fn search_projects(
     let project_no = params.project_no.unwrap_or("".to_string());
     let mnotes = params.mnotes.unwrap_or("".to_string());
     let tnotes = params.tnotes.unwrap_or("".to_string());
+    let assignee_name = params.assignee_name.unwrap_or("".to_string());
+    let start_date = params.start_date.unwrap_or("1970-01-01".to_string());
+    let end_date = params.end_date.unwrap_or("2100-12-31".to_string());
     let search_params_not_null = SearchParamsNotNull {
         page,
         rows,
@@ -106,9 +109,10 @@ pub async fn search_projects(
         project_no,
         mnotes,
         tnotes,
+        assignee_name,
     };
     println!("\nsearch_params_not_null: {:?}\n", search_params_not_null);
-    let (projects, _num_pages) = QueryCore::search(&state.conn, search_params_not_null)
+    let (projects, _num_pages) = QueryCore::search(&state.conn, search_params_not_null, &start_date, &end_date)
         .await
         .expect("Cannot find projects in page");
 
