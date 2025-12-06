@@ -100,17 +100,26 @@ pub async fn search_projects(
 pub async fn search_count(
     state: State<AppState>,
     Query(params): Query<SearchParams>,
-) -> Result<Json<u64>, (StatusCode, &'static str)> {
+) -> Result<Json<Vec<Vec<String>>>, (StatusCode, &'static str)> {
     let search_params_not_null = search_params_to_search_params_not_null(params.clone());
+    let assignee_name_list = get_assignee_name_list().await;
     let start_date = params.start_date.unwrap_or("1970-01-01".to_string());
     let end_date = params.end_date.unwrap_or("2100-12-31".to_string());
-    println!("\nsearch_params_not_null: {:?}\n", search_params_not_null);
-    let count =
-        QueryCore::search_count(&state.conn, search_params_not_null, &start_date, &end_date)
+    let mut count_list: Vec<Vec<String>> = vec![];
+    for assignee_name in assignee_name_list {
+        let mut count_item = vec![];
+        let mut search_params = search_params_not_null.clone();
+        search_params.assignee_name = assignee_name.clone();
+        let count =
+        QueryCore::search_count(&state.conn, search_params, &start_date, &end_date)
             .await
             .expect("Cannot find projects in page");
+        count_item.push(assignee_name);
+        count_item.push(count.to_string());
+        count_list.push(count_item);
+    }
 
-    Ok(count.into())
+    Ok(count_list.into())
 }
 
 pub fn search_params_to_search_params_not_null(params: SearchParams) -> SearchParamsNotNull {
@@ -233,6 +242,18 @@ pub async fn get_table_update_time() -> String {
         content
     } else {
         "null".to_string()
+    }
+}
+
+pub async fn get_assignee_name_list() -> Vec<String> {
+    if tokio::fs::try_exists("assignee_name_list.json").await.unwrap() {
+        let content = tokio::fs::read_to_string("assignee_name_list.json")
+            .await
+            .unwrap();
+        serde_json::from_str::<Vec<String>>(&content)
+            .unwrap_or_default()
+    } else {
+        vec![]
     }
 }
 
