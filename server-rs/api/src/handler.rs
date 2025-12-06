@@ -85,6 +85,35 @@ pub async fn search_projects(
     state: State<AppState>,
     Query(params): Query<SearchParams>,
 ) -> Result<Json<Vec<Model>>, (StatusCode, &'static str)> {
+    let search_params_not_null = search_params_to_search_params_not_null(params.clone());
+    let start_date = params.start_date.unwrap_or("1970-01-01".to_string());
+    let end_date = params.end_date.unwrap_or("2100-12-31".to_string());
+    println!("\nsearch_params_not_null: {:?}\n", search_params_not_null);
+    let (projects, _num_pages) =
+        QueryCore::search(&state.conn, search_params_not_null, &start_date, &end_date)
+            .await
+            .expect("Cannot find projects in page");
+
+    Ok(Json(projects))
+}
+
+pub async fn search_count(
+    state: State<AppState>,
+    Query(params): Query<SearchParams>,
+) -> Result<Json<u64>, (StatusCode, &'static str)> {
+    let search_params_not_null = search_params_to_search_params_not_null(params.clone());
+    let start_date = params.start_date.unwrap_or("1970-01-01".to_string());
+    let end_date = params.end_date.unwrap_or("2100-12-31".to_string());
+    println!("\nsearch_params_not_null: {:?}\n", search_params_not_null);
+    let count =
+        QueryCore::search_count(&state.conn, search_params_not_null, &start_date, &end_date)
+            .await
+            .expect("Cannot find projects in page");
+
+    Ok(count.into())
+}
+
+pub fn search_params_to_search_params_not_null(params: SearchParams) -> SearchParamsNotNull {
     let page = params.page.unwrap_or(1);
     let rows = params.rows.unwrap_or(1000);
     let system_id = params.system_id.unwrap_or("".to_string());
@@ -96,9 +125,7 @@ pub async fn search_projects(
     let mnotes = params.mnotes.unwrap_or("".to_string());
     let tnotes = params.tnotes.unwrap_or("".to_string());
     let assignee_name = params.assignee_name.unwrap_or("".to_string());
-    let start_date = params.start_date.unwrap_or("1970-01-01".to_string());
-    let end_date = params.end_date.unwrap_or("2100-12-31".to_string());
-    let search_params_not_null = SearchParamsNotNull {
+    SearchParamsNotNull {
         page,
         rows,
         system_id,
@@ -110,13 +137,7 @@ pub async fn search_projects(
         mnotes,
         tnotes,
         assignee_name,
-    };
-    println!("\nsearch_params_not_null: {:?}\n", search_params_not_null);
-    let (projects, _num_pages) = QueryCore::search(&state.conn, search_params_not_null, &start_date, &end_date)
-        .await
-        .expect("Cannot find projects in page");
-
-    Ok(Json(projects))
+    }
 }
 
 pub async fn search_by_field(

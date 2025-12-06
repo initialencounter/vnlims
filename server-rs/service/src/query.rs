@@ -26,15 +26,16 @@ impl Query {
         paginator.fetch_page(page - 1).await.map(|p| (p, num_pages))
     }
 
-    pub async fn search(
-        db: &DbConn,
-        search_params: SearchParamsNotNull,
+    /// Build search query with filters
+    fn build_search_query(
+        search_params: &SearchParamsNotNull,
         start_date: &str,
         end_date: &str,
-    ) -> Result<(Vec<project::Model>, u64), DbErr> {
-        let start = format!("{} 00:00", start_date); // "2025-11-01 00:00"
-        let end = format!("{} 23:59", end_date); // "2025-12-04 23:59"
-        let paginator = Project::find()
+    ) -> Select<Project> {
+        let start = format!("{} 00:00", start_date);
+        let end = format!("{} 23:59", end_date);
+
+        Project::find()
             .filter(project::Column::SystemId.like(format!("%{}%", search_params.system_id)))
             .filter(
                 project::Column::AppraiserName.like(format!("%{}%", search_params.appraiser_name)),
@@ -55,6 +56,15 @@ impl Query {
                     .add(project::Column::SubmitDate.gte(start))
                     .add(project::Column::SubmitDate.lte(end)),
             )
+    }
+
+    pub async fn search(
+        db: &DbConn,
+        search_params: SearchParamsNotNull,
+        start_date: &str,
+        end_date: &str,
+    ) -> Result<(Vec<project::Model>, u64), DbErr> {
+        let paginator = Self::build_search_query(&search_params, start_date, end_date)
             .order_by(project::Column::SubmitDate, Order::Desc)
             .paginate(db, search_params.rows);
         let num_pages = paginator.num_pages().await?;
@@ -64,6 +74,17 @@ impl Query {
             .fetch_page(search_params.page - 1)
             .await
             .map(|p| (p, num_pages))
+    }
+
+    pub async fn search_count(
+        db: &DbConn,
+        search_params: SearchParamsNotNull,
+        start_date: &str,
+        end_date: &str,
+    ) -> Result<u64, DbErr> {
+        Self::build_search_query(&search_params, start_date, end_date)
+            .count(db)
+            .await
     }
 
     pub async fn search_by_field(

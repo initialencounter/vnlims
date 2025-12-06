@@ -8,8 +8,8 @@ use axum::{
 use axum_example_service::sea_orm::Database;
 use handler::{
     create_project, delete_project, favicon_handler, get_table_update_time, import_porjects,
-    search_item_c_name, search_m_notes, search_projects, search_t_notes, static_handler,
-    static_handler_404, search_principal, AppState,
+    search_count, search_item_c_name, search_m_notes, search_principal, search_projects,
+    search_t_notes, static_handler, static_handler_404, AppState,
 };
 use layer::decode_uri;
 use migration::{Migrator, MigratorTrait};
@@ -76,6 +76,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/", post(create_project))
         .route("/favicon.ico", get(favicon_handler))
         .route("/search", get(search_projects))
+        .route("/search_count", get(search_count))
         .route("/searchTNotes", get(search_t_notes))
         .route("/searchMNotes", get(search_m_notes))
         .route("/searchPrincipal", get(search_principal))
