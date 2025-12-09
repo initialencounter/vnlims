@@ -39,6 +39,11 @@ const routes: RouteRecordRaw[] = [
     name: 'stack',
     component: () => import('../views/Stack.vue')
   },
+  {
+    path: '/textProcessor',
+    name: 'textProcessor',
+    component: () => import('../views/TextProcessor.vue')
+  },
 ]
 
 const router = createRouter({

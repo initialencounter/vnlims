@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { House, Search, Fold, Expand, Refresh, Document, Box } from '@element-plus/icons-vue';
+import { House, Search, Fold, Expand, Refresh, Document, Box, Edit } from '@element-plus/icons-vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -50,6 +50,12 @@ const menuItems = [
     title: '堆码计算',
     icon: Box,
     requiresUnlock: false,
+  },
+  {
+    path: '/textProcessor',
+    title: '文本处理器',
+    icon: Edit,
+    description: '批量处理文本数据'
   },
 ];
 const handleSelect = (path: string) => {
