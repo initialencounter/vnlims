@@ -5,6 +5,7 @@ use axum::{
     extract::ConnectInfo,
     routing::{get, post, Router},
 };
+use tracing_subscriber::fmt::time::FormatTime;
 use axum_example_service::sea_orm::Database;
 use handler::{
     create_project, delete_project, favicon_handler, get_table_update_time, import_porjects,
@@ -20,6 +21,31 @@ use tower_http::{
     trace::{DefaultMakeSpan, TraceLayer},
 };
 
+// 自定义时间格式化器，固定纳秒位数为9位
+struct FixedNanosTime;
+
+impl FormatTime for FixedNanosTime {
+    fn format_time(&self, w: &mut tracing_subscriber::fmt::format::Writer<'_>) -> std::fmt::Result {
+        let now = time::OffsetDateTime::now_local()
+            .unwrap_or_else(|_| time::OffsetDateTime::now_utc());
+
+        // 手动格式化时间，固定纳秒为9位
+        write!(
+            w,
+            "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:09}{:+03}:{:02}",
+            now.year(),
+            now.month() as u8,
+            now.day(),
+            now.hour(),
+            now.minute(),
+            now.second(),
+            now.nanosecond(),
+            now.offset().whole_hours(),
+            now.offset().minutes_past_hour().abs()
+        )
+    }
+}
+
 #[tokio::main]
 async fn start() -> anyhow::Result<()> {
     // 设置日志级别，过滤掉 sqlx 的 trace 日志
@@ -28,7 +54,7 @@ async fn start() -> anyhow::Result<()> {
     // 使用更灵活的日志初始化方式
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
-        .with_timer(tracing_subscriber::fmt::time::LocalTime::rfc_3339())
+        .with_timer(FixedNanosTime)
         .with_target(false) // 不显示 target (axum_example_api)
         .init();
 
