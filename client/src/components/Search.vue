@@ -73,6 +73,7 @@
                 size="default"
                 style="width: 100%"
                 value-format="YYYY-MM-DD"
+                @clear="query.startDate = ''"
               />
             </el-form-item>
           </el-col>
@@ -86,6 +87,7 @@
                 size="default"
                 style="width: 100%"
                 value-format="YYYY-MM-DD"
+                @clear="query.endDate = ''"
               />
             </el-form-item>
           </el-col>

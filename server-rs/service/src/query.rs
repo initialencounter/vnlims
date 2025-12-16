@@ -32,30 +32,65 @@ impl Query {
         start_date: &str,
         end_date: &str,
     ) -> Select<Project> {
-        let start = format!("{} 00:00", start_date);
-        let end = format!("{} 23:59", end_date);
+        let mut start = format!("{} 00:00", start_date);
+        let mut end = format!("{} 23:59", end_date);
+        if start_date.is_empty() {
+            start = "1970-01-01 00:00".to_string();
+        }
 
-        Project::find()
-            .filter(project::Column::SystemId.like(format!("%{}%", search_params.system_id)))
-            .filter(
+        if end_date.is_empty() {
+            end = "2100-12-31 00:00".to_string();
+        }
+
+        let mut query = Project::find();
+
+        if !search_params.system_id.is_empty() {
+            query = query
+                .filter(project::Column::SystemId.like(format!("%{}%", search_params.system_id)));
+        }
+        if !search_params.appraiser_name.is_empty() {
+            query = query.filter(
                 project::Column::AppraiserName.like(format!("%{}%", search_params.appraiser_name)),
-            )
-            .filter(project::Column::ItemCName.like(format!("%{}%", search_params.item_c_name)))
-            .filter(project::Column::ItemEName.like(format!("%{}%", search_params.item_e_name)))
-            .filter(
+            );
+        }
+        if !search_params.item_c_name.is_empty() {
+            query = query.filter(
+                project::Column::ItemCName.like(format!("%{}%", search_params.item_c_name)),
+            );
+        }
+        if !search_params.item_e_name.is_empty() {
+            query = query.filter(
+                project::Column::ItemEName.like(format!("%{}%", search_params.item_e_name)),
+            );
+        }
+        if !search_params.principal_name.is_empty() {
+            query = query.filter(
                 project::Column::PrincipalName.like(format!("%{}%", search_params.principal_name)),
-            )
-            .filter(project::Column::ProjectNo.like(format!("%{}%", search_params.project_no)))
-            .filter(project::Column::Mnotes.like(format!("%{}%", search_params.mnotes)))
-            .filter(project::Column::Tnotes.like(format!("%{}%", search_params.tnotes)))
-            .filter(
+            );
+        }
+        if !search_params.project_no.is_empty() {
+            query = query
+                .filter(project::Column::ProjectNo.like(format!("%{}%", search_params.project_no)));
+        }
+        if !search_params.mnotes.is_empty() {
+            query =
+                query.filter(project::Column::Mnotes.like(format!("%{}%", search_params.mnotes)));
+        }
+        if !search_params.tnotes.is_empty() {
+            query =
+                query.filter(project::Column::Tnotes.like(format!("%{}%", search_params.tnotes)));
+        }
+        if !search_params.assignee_name.is_empty() {
+            query = query.filter(
                 project::Column::AssigneeName.like(format!("%{}%", search_params.assignee_name)),
-            )
-            .filter(
-                Condition::all()
-                    .add(project::Column::SubmitDate.gte(start))
-                    .add(project::Column::SubmitDate.lte(end)),
-            )
+            );
+        }
+
+        query.filter(
+            Condition::all()
+                .add(project::Column::SubmitDate.gte(start))
+                .add(project::Column::SubmitDate.lte(end)),
+        )
     }
 
     pub async fn search(

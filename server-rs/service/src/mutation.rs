@@ -85,7 +85,7 @@ impl Mutation {
                         Column::ItemEName,
                         Column::Mnotes,
                         Column::Tnotes,
-                        ])
+                    ])
                     .to_owned(),
             )
             .exec(db)

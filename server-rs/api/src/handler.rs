@@ -110,8 +110,7 @@ pub async fn search_count(
         let mut count_item = vec![];
         let mut search_params = search_params_not_null.clone();
         search_params.assignee_name = assignee_name.clone();
-        let count =
-        QueryCore::search_count(&state.conn, search_params, &start_date, &end_date)
+        let count = QueryCore::search_count(&state.conn, search_params, &start_date, &end_date)
             .await
             .expect("Cannot find projects in page");
         count_item.push(assignee_name);
@@ -246,12 +245,14 @@ pub async fn get_table_update_time() -> String {
 }
 
 pub async fn get_assignee_name_list() -> Vec<String> {
-    if tokio::fs::try_exists("assignee_name_list.json").await.unwrap() {
+    if tokio::fs::try_exists("assignee_name_list.json")
+        .await
+        .unwrap()
+    {
         let content = tokio::fs::read_to_string("assignee_name_list.json")
             .await
             .unwrap();
-        serde_json::from_str::<Vec<String>>(&content)
-            .unwrap_or_default()
+        serde_json::from_str::<Vec<String>>(&content).unwrap_or_default()
     } else {
         vec![]
     }
