@@ -11,7 +11,7 @@ use handler::{
     search_count, search_item_c_name, search_m_notes, search_principal, search_projects,
     search_t_notes, static_handler, static_handler_404, AppState,
 };
-use layer::decode_uri;
+use layer::{decode_uri, resolve_ip_to_hostname};
 use migration::{Migrator, MigratorTrait};
 use std::{env, net::SocketAddr};
 use tower_http::{
@@ -29,6 +29,7 @@ async fn start() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .with_timer(tracing_subscriber::fmt::time::LocalTime::rfc_3339())
+        .with_target(false) // 不显示 target (axum_example_api)
         .init();
 
     dotenvy::dotenv().ok();
@@ -57,7 +58,7 @@ async fn start() -> anyhow::Result<()> {
                 {
                     tracing::info!(
                         "{} [{}] {} {}",
-                        addr.ip(),
+                        resolve_ip_to_hostname(addr.ip()),
                         request.method(),
                         request.uri().path(),
                         decode_uri(request.uri().query().unwrap_or("")),
