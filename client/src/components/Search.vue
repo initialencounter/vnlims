@@ -1,16 +1,20 @@
 <template>
   <div class="search-container">
     <div class="search-form-card">
-      <el-form 
-        :model="query" 
-        @submit.prevent="submitQuery" 
+      <el-form
+        :model="query"
+        @submit.prevent="submitQuery"
         label-position="top"
         class="search-form"
       >
         <el-row :gutter="16">
           <el-col :span="8">
             <el-form-item label="运输方式">
-              <el-select v-model="query.systemId" placeholder="请选择运输方式" size="default">
+              <el-select
+                v-model="query.systemId"
+                placeholder="请选择运输方式"
+                size="default"
+              >
                 <el-option label="全部" value="all" />
                 <el-option label="空运" value="pek" />
                 <el-option label="海运" value="sek" />
@@ -19,10 +23,14 @@
               </el-select>
             </el-form-item>
           </el-col>
-          
+
           <el-col :span="8">
             <el-form-item label="物品种类">
-              <el-select v-model="query.category" placeholder="请选择类别" size="default">
+              <el-select
+                v-model="query.category"
+                placeholder="请选择类别"
+                size="default"
+              >
                 <el-option label="化学品" value="chemical" />
                 <el-option label="锂电池类" value="battery" />
                 <el-option label="钠离子电池类" value="sodium" />
@@ -31,10 +39,14 @@
               </el-select>
             </el-form-item>
           </el-col>
-          
+
           <el-col :span="8">
             <el-form-item label="委托类型">
-              <el-select v-model="query.reportType" placeholder="请选择委托类型" size="default">
+              <el-select
+                v-model="query.reportType"
+                placeholder="请选择委托类型"
+                size="default"
+              >
                 <el-option label="全部" value="" />
                 <el-option label="初验" value="0" />
                 <el-option label="换证" value="1" />
@@ -42,27 +54,45 @@
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-row :gutter="16">
           <el-col :span="8">
             <el-form-item label="主检员">
-              <el-input clearable autocomplete="on" v-model="query.appraiserName" placeholder="请输入主检员姓名" size="default" />
+              <el-input
+                clearable
+                autocomplete="on"
+                v-model="query.appraiserName"
+                placeholder="请输入主检员姓名"
+                size="default"
+              />
             </el-form-item>
           </el-col>
-          
+
           <el-col :span="8">
             <el-form-item label="物品名称">
-              <el-input clearable autocomplete="on" v-model="query.itemName" placeholder="请输入物品名称" size="default" />
+              <el-input
+                clearable
+                autocomplete="on"
+                v-model="query.itemName"
+                placeholder="请输入物品名称"
+                size="default"
+              />
             </el-form-item>
           </el-col>
-          
+
           <el-col :span="8">
             <el-form-item label="委托单位">
-              <el-input clearable autocomplete="on" v-model="query.principal" placeholder="请输入委托单位" size="default" />
+              <el-input
+                clearable
+                autocomplete="on"
+                v-model="query.principal"
+                placeholder="请输入委托单位"
+                size="default"
+              />
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-row :gutter="16">
           <el-col :span="6">
             <el-form-item label="开始日期">
@@ -77,7 +107,7 @@
               />
             </el-form-item>
           </el-col>
-          
+
           <el-col :span="6">
             <el-form-item label="结束日期">
               <el-date-picker
@@ -91,13 +121,19 @@
               />
             </el-form-item>
           </el-col>
-          
+
           <el-col :span="6">
             <el-form-item label="项目编号">
-              <el-input clearable autocomplete="on" v-model="query.projectNo" placeholder="请输入项目编号" size="default" />
+              <el-input
+                clearable
+                autocomplete="on"
+                v-model="query.projectNo"
+                placeholder="请输入项目编号"
+                size="default"
+              />
             </el-form-item>
           </el-col>
-          
+
           <el-col :span="6">
             <el-form-item label="显示条数">
               <el-input-number
@@ -110,16 +146,22 @@
             </el-form-item>
           </el-col>
         </el-row>
-        
+
         <el-form-item class="submit-form-item">
-          <el-button type="primary" size="default" @click="submitQuery" :loading="isLoading" class="submit-btn">
+          <el-button
+            type="primary"
+            size="default"
+            @click="submitQuery"
+            :loading="isLoading"
+            class="submit-btn"
+          >
             <el-icon class="mr-2"><Search /></el-icon>
-            {{ isLoading ? '查询中...' : '开始查询' }}
+            {{ isLoading ? "查询中..." : "开始查询" }}
           </el-button>
         </el-form-item>
       </el-form>
     </div>
-    
+
     <div class="results-section" v-if="dataList.length > 0">
       <div class="results-header">
         <h4 class="results-title">查询结果</h4>
@@ -131,14 +173,14 @@
 </template>
 
 <script setup lang="ts">
-import DataForm from './Form.vue';
-import { ref } from 'vue';
-import type { DataModel } from '../types';
-import { Search } from '@element-plus/icons-vue';
-import axios from 'axios';
-import { isDev } from '../utils';
-import { ElLoading, ElMessage } from 'element-plus';
-import { useSearchStore } from '../stores/search';
+import DataForm from "./Form.vue";
+import { ref } from "vue";
+import type { DataModel } from "../types";
+import { Search } from "@element-plus/icons-vue";
+import axios from "axios";
+import { isDev } from "../utils";
+import { ElLoading, ElMessage } from "element-plus";
+import { useSearchStore } from "../stores/search";
 
 const isDevMode = isDev();
 const searchStore = useSearchStore();
@@ -148,40 +190,45 @@ const isLoading = ref(false);
 
 const submitQuery = async () => {
   isLoading.value = true;
-  
+
   const loading = ElLoading.service({
     lock: true,
-    text: '正在查询数据...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    text: "正在查询数据...",
+    background: "rgba(0, 0, 0, 0.7)",
   });
 
   try {
     const trimmedQuery = Object.fromEntries(
       Object.entries(query.value).map(([key, value]) => [
         key,
-        typeof value === 'string' ? value.trim() : value,
-      ])
+        typeof value === "string" ? value.trim() : value,
+      ]),
     );
-    
-    if (trimmedQuery["systemId"] === 'all') {
+
+    if (trimmedQuery["systemId"] === "all") {
       trimmedQuery["systemId"] = "";
     }
-    
+
+    if (trimmedQuery["projectNo"]) {
+      trimmedQuery["startDate"] = "";
+      trimmedQuery["endDate"] = "";
+    }
+
     const queryString = new URLSearchParams(
-      trimmedQuery as Record<string, string>
+      trimmedQuery as Record<string, string>,
     ).toString();
 
-    const baseUrl = isDevMode ? 'http://localhost:4000' : '';
+    const baseUrl = isDevMode ? "http://localhost:4000" : "";
     const res = await axios.get(`${baseUrl}/search?${queryString}`);
-    
+
     let data: DataModel[] = res.data;
     searchStore.setHomeResults(data);
     dataList.value = data.slice(0, Number(query.value.rows));
-    
+
     ElMessage.success(`查询完成，共找到 ${data.length} 条记录`);
   } catch (error) {
-    console.error('查询出错:', error);
-    ElMessage.error('查询失败，请稍后重试');
+    console.error("查询出错:", error);
+    ElMessage.error("查询失败，请稍后重试");
   } finally {
     loading.close();
     isLoading.value = false;
@@ -294,7 +341,7 @@ const submitQuery = async () => {
   .search-container {
     padding: 12px;
   }
-  
+
   .search-form :deep(.el-col) {
     margin-bottom: 8px;
   }
@@ -304,11 +351,11 @@ const submitQuery = async () => {
   .search-container {
     padding: 8px;
   }
-  
+
   .search-form :deep(.el-row) {
     margin: 0 -4px;
   }
-  
+
   .search-form :deep(.el-col) {
     padding: 0 4px;
   }
