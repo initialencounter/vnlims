@@ -18,12 +18,12 @@
       />
       <el-table-column prop="reportNo" label="报告编号" width="150" sortable />
       <el-table-column prop="itemCName" label="项目名称" min-width="150" sortable />
+       <el-table-column prop="principalName" label="委托方" width="100" sortable />
+       <el-table-column prop="submitDate" label="提交日期" width="120" sortable />
       <el-table-column prop="assigneeName" label="提交人" width="70" sortable />
-      <el-table-column prop="principalName" label="委托方" width="100" sortable />
       <el-table-column prop="appraiserName" label="主检员" width="70" sortable />
       <el-table-column prop="auditorName" label="审核员" width="70" sortable />
       <el-table-column prop="displayStatus" label="状态" width="90" sortable />
-      <el-table-column prop="submitDate" label="提交日期" width="120" sortable />
       <el-table-column prop="tnotes" label="技术部备注" min-width="150" sortable />
       <el-table-column prop="mnotes" label="市场部备注" min-width="200" sortable />
     </el-table>
