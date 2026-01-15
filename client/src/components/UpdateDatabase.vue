@@ -106,6 +106,10 @@ const submitRequest = async () => {
       });
     }
     message.value = res?.data;
+    if (message.value.startsWith('请先登录')) {
+      messageType.value = 'error';
+      return;
+    }
     messageType.value = 'success';
   } catch (error: any) {
     message.value = `错误: ${error.message}`;
