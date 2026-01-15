@@ -3,6 +3,9 @@
     <h2 class="page-title">更新数据库</h2>
 
     <h3>最后更新时间：{{ lastUpdatedTime }}</h3>
+    
+    <Login />
+    
     <el-form
       @submit.prevent="submitRequest"
       label-position="top"
@@ -10,34 +13,7 @@
       autocomplete="on"
     >
       <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="用户名">
-            <el-input
-              v-model="username"
-              placeholder="请输入用户名"
-              autocomplete="username"
-              :disabled="isLoading"
-            />
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
-          <el-form-item label="密码">
-            <el-input
-              v-model="password"
-              placeholder="请输入密码"
-              :disabled="isLoading"
-              autocomplete="current-password"
-              show-password
-            >
-              <template #prefix>
-                <el-icon><Key /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-        </el-col>
-
-        <el-col :span="8">
+        <el-col :span="24">
           <el-form-item label="日期">
             <el-date-picker
               v-model="date"
@@ -76,9 +52,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Key } from '@element-plus/icons-vue';
 import { isDev } from '../utils';
 import axios from 'axios';
+import Login from './Login.vue';
 
 const password = ref('');
 const currentTime = new Date(new Date().setHours(new Date().getHours() + 8));
@@ -106,11 +82,6 @@ const submitRequest = async () => {
 
   try {
     let res;
-    if (username.value.length < 3) {
-      message.value = '用户名错误';
-      messageType.value = 'error';
-      return;
-    }
     let dateObj = new Date(date.value);
     if (dateObj.getTime() > new Date(currentTime).getTime()) {
       message.value = '日期错误';

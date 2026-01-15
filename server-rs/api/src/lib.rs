@@ -5,7 +5,6 @@ use axum::{
     extract::ConnectInfo,
     routing::{get, post, Router},
 };
-use tracing_subscriber::fmt::time::FormatTime;
 use axum_example_service::sea_orm::Database;
 use handler::{
     create_project, delete_project, favicon_handler, get_table_update_time, import_porjects,
@@ -14,20 +13,24 @@ use handler::{
 };
 use layer::{decode_uri, resolve_ip_to_hostname};
 use migration::{Migrator, MigratorTrait};
+use spider::Spider;
 use std::{env, net::SocketAddr};
 use tower_http::{
     compression::CompressionLayer,
     cors::{Any, CorsLayer},
     trace::{DefaultMakeSpan, TraceLayer},
 };
+use tracing_subscriber::fmt::time::FormatTime;
+
+use crate::handler::{get_captcha_handler, get_login_status_handler, login_handler};
 
 // 自定义时间格式化器，固定纳秒位数为9位
 struct FixedNanosTime;
 
 impl FormatTime for FixedNanosTime {
     fn format_time(&self, w: &mut tracing_subscriber::fmt::format::Writer<'_>) -> std::fmt::Result {
-        let now = time::OffsetDateTime::now_local()
-            .unwrap_or_else(|_| time::OffsetDateTime::now_utc());
+        let now =
+            time::OffsetDateTime::now_local().unwrap_or_else(|_| time::OffsetDateTime::now_utc());
 
         // 手动格式化时间，固定纳秒为9位
         write!(
@@ -61,13 +64,15 @@ async fn start() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
     let server_url = env::var("SERVER_URL").expect("SERVER_URL is not set in .env file");
+    let lims_base_url = env::var("LIMS_BASE_URL").expect("LIMS_BASE_URL is not set in .env file");
 
     let conn = Database::connect(db_url)
         .await
         .expect("Database connection failed");
     Migrator::up(&conn, None).await.unwrap();
 
-    let state = AppState { conn };
+    let spider = Spider::new(lims_base_url);
+    let state = AppState { conn, spider };
 
     // 配置 CORS
     let cors = CorsLayer::new()
@@ -79,6 +84,9 @@ async fn start() -> anyhow::Result<()> {
         .make_span_with(DefaultMakeSpan::new().include_headers(false))
         .on_request(
             |request: &hyper::Request<axum::body::Body>, _span: &tracing::Span| {
+                if request.uri().path() == "/favicon.ico" || request.uri().path().starts_with("/get-login-status") {
+                    return;
+                }
                 if let Some(ConnectInfo(addr)) =
                     request.extensions().get::<ConnectInfo<SocketAddr>>()
                 {
@@ -111,6 +119,9 @@ async fn start() -> anyhow::Result<()> {
         .route("/import", get(import_porjects))
         .route("/delete/{id}", post(delete_project))
         .route("/getLastUpdated", get(get_table_update_time))
+        .route("/get-captcha", post(get_captcha_handler))
+        .route("/login", post(login_handler))
+        .route("/get-login-status", get(get_login_status_handler))
         .fallback(static_handler_404)
         .layer(CompressionLayer::new())
         .layer(trace_layer)

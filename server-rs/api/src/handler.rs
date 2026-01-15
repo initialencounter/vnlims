@@ -1,7 +1,7 @@
 use axum::{
     extract::{Form, Path, Query, State},
     http::StatusCode,
-    response::Html,
+    response::{Html, IntoResponse, Response},
     Json,
 };
 use axum_example_service::{
@@ -12,7 +12,7 @@ use chrono::{DateTime, Local};
 use entity::project::{self, Model};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use spider::{make_query_string, Spider};
+use spider::{make_query_string, LoginRequest, Spider, LOGIN_STATUS};
 use std::env;
 use tokio::io::AsyncWriteExt;
 
@@ -24,6 +24,12 @@ lazy_static! {
 #[derive(Clone)]
 pub struct AppState {
     pub conn: DatabaseConnection,
+    pub spider: Spider,
+}
+
+#[derive(Debug, Serialize)]
+struct CustomError {
+    message: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -196,16 +202,21 @@ pub async fn import_porjects(
     state: State<AppState>,
     Query(params): Query<UpdateProjectsParams>,
 ) -> String {
-    let username = params.username.unwrap_or("".to_string());
-    let password = params.password.unwrap_or("".to_string());
+    if LOGIN_STATUS.load(std::sync::atomic::Ordering::Relaxed) == false {
+        return "请先登录系统后再导入数据".to_string();
+    }
     let date = params.date.unwrap_or("".to_string());
-    let spider = Spider::new(LIMS_BASE_URL.to_string(), username, password);
-    spider.login().await.unwrap();
     let system_ids = ["pek", "sek", "aek", "rek"];
     let mut count = 0;
     for system_id in system_ids {
         let query_string = make_query_string(&date, system_id);
-        let form_data = spider.make_query(&query_string).await.unwrap();
+        let form_data = match state.spider.make_query(&query_string).await {
+            Ok(data) => data,
+            Err(e) => {
+                tracing::error!("获取 {} 数据失败: {}", system_id, e);
+                vec![]
+            }
+        };
         count += form_data.len();
         tracing::info!("{} 新增 {} 数据: - {} 条", date, system_id, form_data.len());
         MutationCore::insert_projects(&state.conn, form_data)
@@ -263,4 +274,38 @@ pub async fn favicon_handler() -> Html<&'static [u8]> {
         env!("CARGO_MANIFEST_DIR"),
         "/static/favicon.ico"
     )))
+}
+
+pub async fn get_captcha_handler(
+    State(state): State<AppState>,
+) -> Response {
+    match state.spider.get_captcha().await {
+        Ok(captcha) => Json(captcha).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("获取验证码失败: {}", e),
+        })
+        .into_response(),
+    }
+}
+
+pub async fn login_handler(
+    State(state): State<AppState>,
+    Json(login_req): Json<LoginRequest>,
+) -> Response {
+    match state
+        .spider
+        .login_with_captcha(&login_req.code, &login_req.username, &login_req.password)
+        .await
+    {
+        Ok(_) => Json(serde_json::json!({"success": true, "message": "登录成功"})).into_response(),
+        Err(e) => Json(CustomError {
+            message: format!("登录失败: {}", e),
+        })
+        .into_response(),
+    }
+}
+
+pub async fn get_login_status_handler() -> Response {
+    let status = LOGIN_STATUS.load(std::sync::atomic::Ordering::Relaxed);
+    Json(serde_json::json!({"logged_in": status})).into_response()
 }
