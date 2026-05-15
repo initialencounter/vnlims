@@ -7,9 +7,9 @@ use axum::{
 };
 use axum_example_service::sea_orm::Database;
 use handler::{
-    create_project, delete_project, favicon_handler, get_table_update_time, import_porjects,
-    search_count, search_item_c_name, search_m_notes, search_principal, search_projects,
-    search_t_notes, static_handler, static_handler_404, AppState,
+    create_project, delete_project, favicon_handler, get_date_counts, get_table_update_time,
+    import_porjects, search_count, search_item_c_name, search_m_notes, search_principal,
+    search_projects, search_t_notes, static_handler, static_handler_404, AppState,
 };
 use layer::{decode_uri, resolve_ip_to_hostname};
 use migration::{Migrator, MigratorTrait};
@@ -118,6 +118,7 @@ async fn start() -> anyhow::Result<()> {
         .route("/searchItemCName", get(search_item_c_name))
         .route("/import", get(import_porjects))
         .route("/delete/{id}", post(delete_project))
+        .route("/getDateCounts", get(get_date_counts))
         .route("/getLastUpdated", get(get_table_update_time))
         .route("/get-captcha", post(get_captcha_handler))
         .route("/login", post(login_handler))

@@ -17,7 +17,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '^/(get-login-status|search-property|save-config|get-config|reload-config|upload|upload-selected|get-project-info|get-attachment-info|upload-llm-files|ping|get-captcha|login|reload-clipkeeper-config|set-clipboard-text|search-file)': {
+      '^/(get-login-status|search-property|save-config|get-config|reload-config|upload|upload-selected|get-project-info|get-attachment-info|upload-llm-files|ping|get-captcha|login|reload-clipkeeper-config|set-clipboard-text|search-file|getDateCounts)': {
         target: 'http://127.0.0.1:4000',
         changeOrigin: true,
       },

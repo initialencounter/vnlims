@@ -13,7 +13,7 @@ use entity::project::{self, Model};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use spider::{make_query_string, LoginRequest, Spider, LOGIN_STATUS};
-use std::env;
+use std::{collections::HashMap, env};
 use tokio::io::AsyncWriteExt;
 
 lazy_static! {
@@ -253,6 +253,22 @@ pub async fn get_table_update_time() -> String {
     } else {
         "null".to_string()
     }
+}
+
+#[derive(Deserialize)]
+pub struct DateCountsParams {
+    year: i32,
+    month: u32,
+}
+
+pub async fn get_date_counts(
+    state: State<AppState>,
+    Query(params): Query<DateCountsParams>,
+) -> Result<Json<HashMap<String, u64>>, (StatusCode, &'static str)> {
+    let counts = QueryCore::get_date_counts(&state.conn, params.year, params.month)
+        .await
+        .expect("Cannot get date counts");
+    Ok(Json(counts))
 }
 
 pub async fn get_assignee_name_list() -> Vec<String> {

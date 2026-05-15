@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ::entity::{project, project::Entity as Project};
 use sea_orm::*;
 
@@ -136,5 +138,27 @@ impl Query {
         let num_pages = paginator.num_pages().await?;
 
         paginator.fetch_page(page - 1).await.map(|p| (p, num_pages))
+    }
+
+    pub async fn get_date_counts(db: &DbConn, year: i32, month: u32) -> Result<HashMap<String, u64>, DbErr> {
+        let start = format!("{:04}-{:02}-01", year, month);
+        let end = if month == 12 {
+            format!("{:04}-01-01", year + 1)
+        } else {
+            format!("{:04}-{:02}-01", year, month + 1)
+        };
+        let sql = format!(
+            "SELECT LEFT(submitDate, 10) as date_str, COUNT(*) as cnt FROM project WHERE submitDate >= '{}' AND submitDate < '{}' GROUP BY LEFT(submitDate, 10)",
+            start, end
+        );
+        let stmt = Statement::from_sql_and_values(DbBackend::MySql, &sql, []);
+        let results = db.query_all(stmt).await?;
+        let mut counts = HashMap::new();
+        for row in results {
+            let date: String = row.try_get_by_index(0).unwrap_or_default();
+            let count: i64 = row.try_get_by_index(1).unwrap_or(0);
+            counts.insert(date, count as u64);
+        }
+        Ok(counts)
     }
 }

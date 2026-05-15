@@ -3,121 +3,155 @@
     <h2 class="page-title">更新数据库</h2>
 
     <h3>最后更新时间：{{ lastUpdatedTime }}</h3>
-    
+
     <Login />
-    
-    <el-form
-      @submit.prevent="submitRequest"
-      label-position="top"
-      class="update-form"
-      autocomplete="on"
-    >
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <el-form-item label="日期">
-            <el-date-picker
-              v-model="date"
-              type="date"
-              placeholder="选择日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              :disabled="isLoading"
-              style="width: 100%"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
 
-      <el-form-item>
-        <el-button
-          type="primary"
-          :loading="isLoading"
-          @click="submitRequest"
-          class="submit-button"
-        >
-          {{ isLoading ? '更新中...' : '更新' }}
-        </el-button>
-      </el-form-item>
+    <div class="calendar-wrapper">
+      <el-calendar v-model="calendarDate">
+        <template #date-cell="{ data }">
+          <div
+            class="calendar-day"
+            :class="{
+              'has-data': dateCounts[toDateStr(data.date)],
+              'is-selected': toDateStr(data.date) === selectedDate,
+            }"
+            @click="selectDate(data.date)"
+          >
+            <span class="day-number">{{ data.day }}</span>
+            <span class="day-count">
+              {{ dateCounts[toDateStr(data.date)] || 0 }}
+            </span>
+          </div>
+        </template>
+      </el-calendar>
+    </div>
 
-      <el-alert
-        v-if="message"
-        :title="message"
-        :type="messageType === 'success' ? 'success' : 'error'"
-        show-icon
-        :closable="true"
-      />
-    </el-form>
+    <div v-if="selectedDate" class="action-bar">
+      <div class="selected-info">
+        <span>已选日期：<strong>{{ selectedDate }}</strong></span>
+        <span v-if="dateCounts[selectedDate]" class="hint-text">
+          （已有 {{ dateCounts[selectedDate] }} 条数据，重新导入将覆盖）
+        </span>
+        <span v-else class="hint-text empty">（暂无数据）</span>
+      </div>
+      <el-button
+        type="primary"
+        :loading="isLoading"
+        @click="submitRequest"
+      >
+        {{ isLoading ? '更新中...' : '更新' }}
+      </el-button>
+    </div>
+
+    <el-alert
+      v-if="message"
+      :title="message"
+      :type="messageType === 'success' ? 'success' : 'error'"
+      show-icon
+      :closable="true"
+      class="message-alert"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { isDev } from '../utils';
-import axios from 'axios';
-import Login from './Login.vue';
+import { ref, onMounted, watch } from 'vue'
+import { isDev } from '../utils'
+import axios from 'axios'
+import Login from './Login.vue'
 
-const password = ref('');
-const currentTime = new Date(new Date().setHours(new Date().getHours() + 8));
-const date = ref(currentTime.toISOString().split('T')[0]);
-const username = ref('');
-const isLoading = ref(false);
-const message = ref('');
-const messageType = ref('success');
-const lastUpdatedTime = ref('');
-onMounted(() => {
-  if (isDev()) {
-    axios.get('http://localhost:4000/getLastUpdated').then((res) => {
-      lastUpdatedTime.value = res.data;
-    });
-  } else {
-    axios.get('/getLastUpdated').then((res) => {
-      lastUpdatedTime.value = res.data;
-    });
+const currentTime = new Date(new Date().setHours(new Date().getHours() + 8))
+const selectedDate = ref('')
+const calendarDate = ref(new Date())
+const isLoading = ref(false)
+const message = ref('')
+const messageType = ref('success')
+const lastUpdatedTime = ref('')
+const dateCounts = ref<Record<string, number>>({})
+
+const toDateStr = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const fetchDateCounts = async (year: number, month: number) => {
+  const baseUrl = isDev() ? 'http://localhost:4000' : ''
+  try {
+    const res = await axios.get(`${baseUrl}/getDateCounts`, {
+      params: { year, month },
+    })
+    dateCounts.value = res.data
+  } catch {
+    dateCounts.value = {}
   }
-});
+}
+
+const ymKey = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}`
+let lastYm = ''
+
+const loadMonth = (d: Date) => {
+  const ym = ymKey(d)
+  if (ym === lastYm) return
+  lastYm = ym
+  fetchDateCounts(d.getFullYear(), d.getMonth() + 1)
+}
+
+onMounted(async () => {
+  const baseUrl = isDev() ? 'http://localhost:4000' : ''
+  try {
+    const lastUpdatedRes = await axios.get(`${baseUrl}/getLastUpdated`)
+    lastUpdatedTime.value = lastUpdatedRes.data
+  } catch {
+    // 静默处理
+  }
+  loadMonth(calendarDate.value)
+})
+
+watch(calendarDate, loadMonth)
+
+const selectDate = (date: Date) => {
+  selectedDate.value = toDateStr(date)
+}
 
 const submitRequest = async () => {
-  isLoading.value = true;
-  message.value = '';
+  if (!selectedDate.value) {
+    message.value = '请先在日历中选择一个日期'
+    messageType.value = 'error'
+    return
+  }
+
+  const dateObj = new Date(selectedDate.value)
+  if (dateObj.getTime() > new Date(currentTime).getTime()) {
+    message.value = '日期不能超过今天'
+    messageType.value = 'error'
+    return
+  }
+
+  isLoading.value = true
+  message.value = ''
 
   try {
-    let res;
-    let dateObj = new Date(date.value);
-    if (dateObj.getTime() > new Date(currentTime).getTime()) {
-      message.value = '日期错误';
-      messageType.value = 'error';
-      return;
-    }
-    if (isDev()) {
-      res = await axios.get('http://localhost:4000/import', {
-        params: {
-          password: password.value,
-          date: date.value,
-          username: username.value,
-        },
-      });
-    } else {
-      res = await axios.get('/import', {
-        params: {
-          password: password.value,
-          date: date.value,
-          username: username.value,
-        },
-      });
-    }
-    message.value = res?.data;
+    const baseUrl = isDev() ? 'http://localhost:4000' : ''
+    const res = await axios.get(`${baseUrl}/import`, {
+      params: {
+        date: selectedDate.value,
+      },
+    })
+    message.value = res?.data
     if (message.value.startsWith('请先登录')) {
-      messageType.value = 'error';
-      return;
+      messageType.value = 'error'
+    } else {
+      messageType.value = 'success'
     }
-    messageType.value = 'success';
   } catch (error: any) {
-    message.value = `错误: ${error.message}`;
-    messageType.value = 'error';
+    message.value = `错误: ${error.message}`
+    messageType.value = 'error'
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-};
+}
 </script>
 
 <style scoped>
@@ -131,17 +165,113 @@ const submitRequest = async () => {
   color: #303133;
 }
 
-.update-form {
-  padding: 30px;
+.calendar-wrapper {
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* 覆盖 Element Plus 日历格子高度 */
+.calendar-wrapper :deep(.el-calendar-table td) {
+  height: 68px;
+  vertical-align: top;
+}
+
+.calendar-wrapper :deep(.el-calendar-table .el-calendar-day) {
+  height: 100%;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+  padding: 2px 4px;
+  box-sizing: border-box;
+}
+
+.calendar-day:hover {
+  background-color: #ecf5ff;
+}
+
+.calendar-day.has-data {
+  background-color: #e6f7e6;
+}
+
+.calendar-day.has-data:hover {
+  background-color: #d4edd4;
+}
+
+.calendar-day.is-selected {
+  background-color: #409eff !important;
+}
+
+.calendar-day.is-selected .day-number,
+.calendar-day.is-selected .day-count {
+  color: #fff;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+  line-height: 1.5;
+}
+
+.day-count {
+  font-size: 11px;
+  color: #67c23a;
+  line-height: 1.4;
+  min-height: 15px;
+}
+
+.calendar-day.has-data .day-count {
+  font-weight: 600;
+}
+
+.calendar-day.is-selected .day-count {
+  color: #e6ffe6;
+}
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-.submit-button {
-  min-width: 120px;
+.selected-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.el-alert {
+.hint-text {
+  font-size: 13px;
+  color: #409eff;
+}
+
+.hint-text.empty {
+  color: #909399;
+}
+
+.message-alert {
   margin-top: 20px;
 }
 </style>
