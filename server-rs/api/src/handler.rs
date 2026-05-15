@@ -297,7 +297,18 @@ pub async fn login_handler(
         .login_with_captcha(&login_req.code, &login_req.username, &login_req.password)
         .await
     {
-        Ok(_) => Json(serde_json::json!({"success": true, "message": "登录成功"})).into_response(),
+        Ok(res) => {
+            if res.success {
+                tracing::info!("登录成功, 用户名: {}", login_req.username);
+                Json(res).into_response()
+            } else {
+                tracing::error!("登录失败, 用户名: {}, 错误信息: {}", login_req.username, res.message);
+                Json(CustomError {
+                    message: format!("登录失败: {}", res.message),
+                })
+                .into_response()
+            }
+        },
         Err(e) => Json(CustomError {
             message: format!("登录失败: {}", e),
         })

@@ -1,21 +1,29 @@
 use base64::Engine;
 use base64::engine::general_purpose;
 use reqwest::Client;
+use reqwest::StatusCode;
 use reqwest::header;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::RwLock;
-use urlencoding::encode;
-use tokio::time::{sleep, Duration};
 use tokio::task;
+use tokio::time::{Duration, sleep};
+use urlencoding::encode;
 
 use serde::{Deserialize, Serialize};
 
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 pub static LOGIN_STATUS: AtomicBool = AtomicBool::new(false);
 
 const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
+
+lazy_static! {
+    static ref RE_PASSWORD_INCORRECT_COUNT: Regex = Regex::new(r"密码错误(\d+)次").unwrap();
+    static ref RE_LOGIN_USERNAME: Regex = Regex::new(r"欢迎\s(.+)！").unwrap();
+}
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -29,6 +37,14 @@ pub struct LoginRequest {
     pub code: String,
     pub username: String,
     pub password: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LoginResponse {
+    pub success: bool,
+    pub message: String,
+    pub password_incorrect_count: u32,
+    pub login_username: String,
 }
 
 #[derive(Clone)]
@@ -84,12 +100,76 @@ impl Spider {
         }
     }
 
+    pub async fn login_helper(
+        &self,
+        response_status: StatusCode,
+        response_text: String,
+    ) -> LoginResponse {
+        if !response_status.is_success() {
+            LOGIN_STATUS.store(false, Ordering::Relaxed);
+            return LoginResponse {
+                success: false,
+                message: format!("登录失败, 状态码:{}", response_status.as_u16()),
+                password_incorrect_count: 0,
+                login_username: "unknow".to_string(),
+            };
+        }
+        let password_incorrect_count = match_password_incorrect_count(response_text.clone());
+        let login_username = match_login_username(response_text.clone());
+        if response_text.contains("密码错误") {
+            self.log(
+                "ERROR",
+                &format!("登录失败: 密码错误{}次", password_incorrect_count),
+            )
+            .await;
+            return LoginResponse {
+                success: false,
+                message: format!("密码错误{}次", password_incorrect_count),
+                password_incorrect_count,
+                login_username,
+            };
+        } else if response_text.contains("校验码错误") {
+            self.log("ERROR", &format!("登录失败: 校验码错误")).await;
+            return LoginResponse {
+                success: false,
+                message: "校验码错误".to_string(),
+                password_incorrect_count,
+                login_username,
+            };
+        } else if response_text.contains("欢迎") {
+            self.log(
+                "INFO",
+                &format!("登录成功, 用户名: {}", login_username.clone()),
+            )
+            .await;
+            task::spawn(async {
+                sleep(Duration::from_millis(3600 * 1000 * 24)).await;
+                LOGIN_STATUS.store(false, Ordering::Relaxed);
+                println!("登录状态已过期，请重新登录。");
+            });
+            LOGIN_STATUS.store(true, Ordering::Relaxed);
+            return LoginResponse {
+                success: true,
+                message: format!("登录成功, 用户名: {}", login_username.clone()),
+                password_incorrect_count,
+                login_username,
+            };
+        } else {
+            return LoginResponse {
+                success: false,
+                message: format!("登录失败, 状态码:{}", response_status.as_u16()),
+                password_incorrect_count: 0,
+                login_username: "unknow".to_string(),
+            };
+        }
+    }
+
     pub async fn login_with_captcha(
         &self,
         code: &str,
         username: &str,
         password: &str,
-    ) -> Result<()> {
+    ) -> Result<LoginResponse> {
         self.log("INFO", &format!("username: {}", username)).await;
         self.log("INFO", &format!("password: {}", password)).await;
 
@@ -111,25 +191,17 @@ impl Spider {
             .send()
             .await?;
 
-        if response.status().is_success() {
-            LOGIN_STATUS.store(true, Ordering::Relaxed);
-            self.log("INFO", "登录成功").await;
-            task::spawn(async {
-                sleep(Duration::from_millis(3600 * 1000 * 24)).await;
-                LOGIN_STATUS.store(false, Ordering::Relaxed);
-                println!("登录状态已过期，请重新登录。");
-            });
-            Ok(())
-        } else {
-            LOGIN_STATUS.store(false, Ordering::Relaxed);
-            self.log("ERROR", &format!("登录失败: {:?}", response.text().await?))
-                .await;
-            Err("登录失败".into())
-        }
+        let response_status = response.status();
+        let response_text = response.text().await?;
+        Ok(self.login_helper(response_status, response_text).await)
     }
 
     pub async fn log(&self, level: &str, message: &str) {
-        println!("[{}] {}", level, message);
+        match level {
+            "INFO" => tracing::info!("{}", message),
+            "ERROR" => tracing::error!("{}", message),
+            _ => {}
+        }
     }
 
     pub async fn make_query(&self, query: &str) -> Result<Vec<ProjectModel>> {
@@ -189,6 +261,19 @@ pub fn make_query_string(date: &str, system_id: &str) -> String {
         .join("&")
 }
 
+pub fn match_password_incorrect_count(error_message: String) -> u32 {
+    RE_PASSWORD_INCORRECT_COUNT
+        .captures(&error_message)
+        .and_then(|cap| cap[1].parse::<u32>().ok())
+        .unwrap_or(0)
+}
+
+pub fn match_login_username(welcome_message: String) -> String {
+    RE_LOGIN_USERNAME
+        .captures(&welcome_message)
+        .and_then(|cap| cap[1].parse::<String>().ok())
+        .unwrap_or("unknow".to_string())
+}
 #[cfg(test)]
 mod tests {
     use std::{env, fs};
@@ -209,10 +294,7 @@ mod tests {
         println!("password: {}", password);
 
         let spider = Spider::new(lims_base_url);
-        let captcha = spider
-            .get_captcha()
-            .await
-            .unwrap();
+        let captcha = spider.get_captcha().await.unwrap();
         fs::write(
             "captcha.jpg",
             general_purpose::STANDARD
