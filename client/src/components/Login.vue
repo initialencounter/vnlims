@@ -77,7 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount } from 'vue';
+import { watch, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { Picture } from '@element-plus/icons-vue';
 import { apiManager } from '../utils/api';
@@ -157,24 +158,17 @@ const handleLogin = async () => {
   }
 };
 
-let interval: any = null;
-onMounted(() => {
-  console.log('Starting login status interval');
-  interval = setInterval(async () => {
-    const statusData = await apiManager.get('get-login-status');
-    loginStatus.value = statusData.logged_in;
-    if (statusData.username) {
-      loggedInUsername.value = statusData.username;
-    }
-  }, 1000);
-});
+const route = useRoute();
 
-onBeforeUnmount(() => {
-  if (interval) {
-    console.log('Clearing login status interval');
-    clearInterval(interval);
+const checkLoginStatus = async () => {
+  const statusData = await apiManager.get('get-login-status');
+  loginStatus.value = statusData.logged_in;
+  if (statusData.username) {
+    loggedInUsername.value = statusData.username;
   }
-});
+};
+
+watch(() => route.fullPath, checkLoginStatus, { immediate: true });
 </script>
 
 <style scoped>
