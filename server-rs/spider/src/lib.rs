@@ -17,6 +17,7 @@ use regex::Regex;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 pub static LOGIN_STATUS: AtomicBool = AtomicBool::new(false);
+pub static LOGIN_USERNAME: std::sync::RwLock<String> = std::sync::RwLock::new(String::new());
 
 const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36";
 
@@ -148,6 +149,7 @@ impl Spider {
                 println!("登录状态已过期，请重新登录。");
             });
             LOGIN_STATUS.store(true, Ordering::Relaxed);
+            *LOGIN_USERNAME.write().unwrap() = login_username.clone();
             return LoginResponse {
                 success: true,
                 message: format!("登录成功, 用户名: {}", login_username.clone()),

@@ -12,7 +12,7 @@ use chrono::{DateTime, Local};
 use entity::project::{self, Model};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use spider::{make_query_string, LoginRequest, Spider, LOGIN_STATUS};
+use spider::{make_query_string, LoginRequest, Spider, LOGIN_STATUS, LOGIN_USERNAME};
 use std::{collections::HashMap, env};
 use tokio::io::AsyncWriteExt;
 
@@ -334,5 +334,6 @@ pub async fn login_handler(
 
 pub async fn get_login_status_handler() -> Response {
     let status = LOGIN_STATUS.load(std::sync::atomic::Ordering::Relaxed);
-    Json(serde_json::json!({"logged_in": status})).into_response()
+    let username = LOGIN_USERNAME.read().unwrap().clone();
+    Json(serde_json::json!({"logged_in": status, "username": username})).into_response()
 }

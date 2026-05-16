@@ -67,7 +67,11 @@
       </el-card>
     </div>
     <div v-else class="welcome-container">
-      <el-result icon="success" title="登录成功"> </el-result>
+      <el-result icon="success" title="登录成功">
+        <template #sub-title>
+          <span>欢迎，{{ loggedInUsername }}</span>
+        </template>
+      </el-result>
     </div>
   </div>
 </template>
@@ -79,6 +83,7 @@ import { Picture } from '@element-plus/icons-vue';
 import { apiManager } from '../utils/api';
 
 const loginStatus = ref(false);
+const loggedInUsername = ref('');
 
 const loginForm = ref({
   username: '',
@@ -136,6 +141,9 @@ const handleLogin = async () => {
 
     if (data.success) {
       ElMessage.success(data.message);
+      if (data.login_username) {
+        loggedInUsername.value = data.login_username;
+      }
     } else if (data.message) {
       ElMessage.error(data.message);
       // 登录失败后重新获取验证码
@@ -153,7 +161,11 @@ let interval: any = null;
 onMounted(() => {
   console.log('Starting login status interval');
   interval = setInterval(async () => {
-    loginStatus.value = (await apiManager.get('get-login-status')).logged_in;
+    const statusData = await apiManager.get('get-login-status');
+    loginStatus.value = statusData.logged_in;
+    if (statusData.username) {
+      loggedInUsername.value = statusData.username;
+    }
   }, 1000);
 });
 
