@@ -12,14 +12,18 @@
           <div
             class="calendar-day"
             :class="{
-              'has-data': dateCounts[toDateStr(data.date)],
+              'has-data': dateCounts[toDateStr(data.date)]?.total,
               'is-selected': toDateStr(data.date) === selectedDate,
             }"
             @click="selectDate(data.date)"
           >
             <span class="day-number">{{ data.day }}</span>
             <span class="day-count">
-              {{ dateCounts[toDateStr(data.date)] || 0 }}
+              <template v-if="dateCounts[toDateStr(data.date)]?.total">
+                总{{ dateCounts[toDateStr(data.date)].total }}
+                / 未打印<span :class="dateCounts[toDateStr(data.date)].null_report ? 'count-red' : 'count-green'">{{ dateCounts[toDateStr(data.date)].null_report }}</span>
+              </template>
+              <template v-else>0</template>
             </span>
           </div>
         </template>
@@ -29,8 +33,8 @@
     <div v-if="selectedDate" class="action-bar">
       <div class="selected-info">
         <span>已选日期：<strong>{{ selectedDate }}</strong></span>
-        <span v-if="dateCounts[selectedDate]" class="hint-text">
-          （已有 {{ dateCounts[selectedDate] }} 条数据，重新导入将覆盖）
+        <span v-if="dateCounts[selectedDate]?.total" class="hint-text">
+          （已有 {{ dateCounts[selectedDate].total }} 条数据，其中 <span :class="dateCounts[selectedDate].null_report ? 'count-red' : 'count-green'">{{ dateCounts[selectedDate].null_report }}</span> 条未报，重新导入将覆盖）
         </span>
         <span v-else class="hint-text empty">（暂无数据）</span>
       </div>
@@ -67,7 +71,7 @@ const isLoading = ref(false)
 const message = ref('')
 const messageType = ref('success')
 const lastUpdatedTime = ref('')
-const dateCounts = ref<Record<string, number>>({})
+const dateCounts = ref<Record<string, { total: number; null_report: number }>>({})
 
 const toDateStr = (date: Date): string => {
   const year = date.getFullYear()
@@ -224,14 +228,14 @@ const submitRequest = async () => {
 }
 
 .day-number {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 500;
   color: #303133;
   line-height: 1.5;
 }
 
 .day-count {
-  font-size: 11px;
+  font-size: 16px;
   color: #67c23a;
   line-height: 1.4;
   min-height: 15px;
@@ -269,6 +273,14 @@ const submitRequest = async () => {
 
 .hint-text.empty {
   color: #909399;
+}
+
+.count-green {
+  color: #67c23a;
+}
+
+.count-red {
+  color: #f56c6c;
 }
 
 .message-alert {

@@ -2,8 +2,15 @@ use std::collections::HashMap;
 
 use ::entity::{project, project::Entity as Project};
 use sea_orm::*;
+use serde::Serialize;
 
 use crate::SearchParamsNotNull;
+
+#[derive(Serialize)]
+pub struct DateCount {
+    pub total: u64,
+    pub null_report: u64,
+}
 
 pub struct Query;
 
@@ -140,7 +147,7 @@ impl Query {
         paginator.fetch_page(page - 1).await.map(|p| (p, num_pages))
     }
 
-    pub async fn get_date_counts(db: &DbConn, year: i32, month: u32) -> Result<HashMap<String, u64>, DbErr> {
+    pub async fn get_date_counts(db: &DbConn, year: i32, month: u32) -> Result<HashMap<String, DateCount>, DbErr> {
         let start = format!("{:04}-{:02}-01", year, month);
         let end = if month == 12 {
             format!("{:04}-01-01", year + 1)
@@ -148,7 +155,7 @@ impl Query {
             format!("{:04}-{:02}-01", year, month + 1)
         };
         let sql = format!(
-            "SELECT LEFT(submitDate, 10) as date_str, COUNT(*) as cnt FROM project WHERE submitDate >= '{}' AND submitDate < '{}' GROUP BY LEFT(submitDate, 10)",
+            "SELECT LEFT(submitDate, 10) as date_str, COUNT(*) as cnt, CAST(SUM(CASE WHEN reportNo = '' THEN 1 ELSE 0 END) AS SIGNED) as null_cnt FROM project WHERE submitDate >= '{}' AND submitDate < '{}' GROUP BY LEFT(submitDate, 10)",
             start, end
         );
         let stmt = Statement::from_sql_and_values(DbBackend::MySql, &sql, []);
@@ -156,8 +163,12 @@ impl Query {
         let mut counts = HashMap::new();
         for row in results {
             let date: String = row.try_get_by_index(0).unwrap_or_default();
-            let count: i64 = row.try_get_by_index(1).unwrap_or(0);
-            counts.insert(date, count as u64);
+            let total: i64 = row.try_get_by_index(1).unwrap_or(0);
+            let null_report: i64 = row.try_get_by_index(2).unwrap_or(0);
+            counts.insert(date, DateCount {
+                total: total as u64,
+                null_report: null_report as u64,
+            });
         }
         Ok(counts)
     }

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mysql -uroot -pmines -h127.0.0.1 sea -e \"SELECT LEFT\\(submitDate, 10\\) as date_str, COUNT\\(*\\) as cnt, CAST\\(SUM\\(CASE WHEN reportNo = '' THEN 1 ELSE 0 END\\) AS UNSIGNED\\) as null_cnt FROM project WHERE submitDate >= '' AND submitDate < '' GROUP BY LEFT\\(submitDate, 10\\) HAVING null_cnt > 0 AND LEFT\\(submitDate, 10\\) = '2024-05-07'\")",
+      "Bash(nohup ./target/release/sea-orm-axum-example.exe > /tmp/server.log 2>&1 & sleep 3 && curl -s \"http://localhost:4000/getDateCounts?year=2024&month=5\" > /dev/null && cat /tmp/server.log | grep \"ERROR\\\\|QUERY\\\\|HANDLER\")",
+      "Bash(python3 -c ' *)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
+    ]
+  }
+}

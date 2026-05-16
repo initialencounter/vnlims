@@ -5,8 +5,8 @@ use axum::{
     Json,
 };
 use axum_example_service::{
-    sea_orm::DatabaseConnection, Mutation as MutationCore, Query as QueryCore, SearchParams,
-    SearchParamsNotNull, SearchSingleFieldParams, UpdateProjectsParams,
+    sea_orm::DatabaseConnection, DateCount, Mutation as MutationCore, Query as QueryCore,
+    SearchParams, SearchParamsNotNull, SearchSingleFieldParams, UpdateProjectsParams,
 };
 use chrono::{DateTime, Local};
 use entity::project::{self, Model};
@@ -264,7 +264,7 @@ pub struct DateCountsParams {
 pub async fn get_date_counts(
     state: State<AppState>,
     Query(params): Query<DateCountsParams>,
-) -> Result<Json<HashMap<String, u64>>, (StatusCode, &'static str)> {
+) -> Result<Json<HashMap<String, DateCount>>, (StatusCode, &'static str)> {
     let counts = QueryCore::get_date_counts(&state.conn, params.year, params.month)
         .await
         .expect("Cannot get date counts");
