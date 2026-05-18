@@ -144,6 +144,7 @@ const handleLogin = async () => {
       ElMessage.success(data.message);
       if (data.login_username) {
         loggedInUsername.value = data.login_username;
+        loginStatus.value = true;
       }
     } else if (data.message) {
       ElMessage.error(data.message);
