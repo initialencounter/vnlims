@@ -21,7 +21,7 @@
             <span class="day-count">
               <template v-if="dateCounts[toDateStr(data.date)]?.total">
                 总{{ dateCounts[toDateStr(data.date)].total }}
-                / 未打印<span :class="dateCounts[toDateStr(data.date)].null_report ? 'count-red' : 'count-green'">{{ dateCounts[toDateStr(data.date)].null_report }}</span>
+                / 未出<span :class="dateCounts[toDateStr(data.date)].null_report ? 'count-red' : 'count-green'">{{ dateCounts[toDateStr(data.date)].null_report }}</span>
               </template>
               <template v-else>0</template>
             </span>

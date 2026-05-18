@@ -155,7 +155,7 @@ impl Query {
             format!("{:04}-{:02}-01", year, month + 1)
         };
         let sql = format!(
-            "SELECT LEFT(submitDate, 10) as date_str, COUNT(*) as cnt, CAST(SUM(CASE WHEN reportNo = '' THEN 1 ELSE 0 END) AS SIGNED) as null_cnt FROM project WHERE submitDate >= '{}' AND submitDate < '{}' GROUP BY LEFT(submitDate, 10)",
+            "SELECT LEFT(submitDate, 10) as date_str, COUNT(*) as cnt, CAST(SUM(CASE WHEN displayStatus != '已生成报告' THEN 1 ELSE 0 END) AS SIGNED) as null_cnt FROM project WHERE submitDate >= '{}' AND submitDate < '{}' GROUP BY LEFT(submitDate, 10)",
             start, end
         );
         let stmt = Statement::from_sql_and_values(DbBackend::MySql, &sql, []);
